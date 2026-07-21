@@ -224,6 +224,18 @@ class PlayerViewModel(
     fun seek(position:Long)=
         manager.seekTo(position)
 
+    fun seekToProgress(progress: Float) {
+        val duration = state.value.duration
+
+        if (duration <= 0L) return
+
+        val position = (duration * progress)
+            .toLong()
+            .coerceIn(0L, duration)
+
+        manager.seekTo(position)
+    }
+
     fun forward10()=
         manager.seekForward()
 

@@ -51,10 +51,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -66,6 +64,7 @@ import com.example.showcase.features.HomeScreen.BootomBAR
 import com.example.showcase.features.Player.PlayerCore.PlayerManager
 import com.example.showcase.features.Player.PlayerViewModel.PlayerViewModel
 import com.example.showcase.features.Player.model.MediaType
+import com.example.showcase.features.Player.model.PlayerInfoState
 import com.example.showcase.features.Player.model.PlayerMedia
 import com.example.showcase.features.Player.model.TrackSheetType
 import com.example.showcase.features.Player.repository.PlayerViewModelFactory
@@ -153,7 +152,7 @@ fun PlayScreenV(
                                 .padding(horizontal = 5.dp)
                                 .clip(shape = RoundedCornerShape(20.dp))
                         ) {
-                            player(PlayerGraph.playerManager, playerViewModel, isFullscreen)
+                            player(PlayerGraph.playerManager, playerViewModel, isFullscreen, playerInfoState = metadata)
                         }
                         Spacer(Modifier.padding(5.dp))
                         MedialPlean(metadata, state, playerViewModel)
@@ -209,6 +208,7 @@ fun player(
     playerManager: PlayerManager,
     playerViewModel: PlayerViewModel,
     isfullscreen: Boolean,
+    playerInfoState: PlayerInfoState,
     modifier: Modifier = Modifier
         .fillMaxWidth()
         .height(220.dp)
@@ -260,10 +260,11 @@ fun player(
             TopControllsV(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .fillMaxSize().padding(horizontal = 10.dp),
+                    .fillMaxSize()
+                    .padding(horizontal = 10.dp),
                 playerViewModel,
                 playerManager,
-                { controlsVisible = !controlsVisible },
+                playerInfoState
             )
         }
         AnimatedVisibility(
@@ -272,10 +273,15 @@ fun player(
             enter = fadeIn() + slideInHorizontally(),
             exit = fadeOut() + slideOutHorizontally()
         ) {
-            BootomControlls(modifier = Modifier.align(Alignment.BottomCenter), playerViewModel)
+            BootomControlls(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .height(30.dp)
+                    .padding(horizontal = 10.dp), playerViewModel
+            )
         }
         //^^controls
-
 
         Box(
             Modifier
@@ -296,9 +302,22 @@ fun player(
                                 playerManager.seekForward()
                             }
                         })
-                }
-        )
+                })
 
+        AnimatedVisibility(
+            visible = controlsVisible,
+            Modifier.align(Alignment.Center),
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            CenterControlls(
+                playerManager, playerViewModel, state,
+                Modifier
+                    .width(750.dp)
+                    .padding(bottom = 12.dp)
+                    .align(Alignment.Center)
+            )
+        }
 
     }
 }
@@ -478,6 +497,13 @@ fun SeekBar(
     modifier: Modifier = Modifier
 ) {
     var width by remember { mutableStateOf(1f) }
+    var isDragging by remember {
+        mutableStateOf(false)
+    }
+
+    var dragProgress by remember {
+        mutableStateOf(progress)
+    }
 
     val animatedProgress by animateFloatAsState(
         targetValue = progress,
@@ -485,27 +511,56 @@ fun SeekBar(
         label = ""
     )
 
+    LaunchedEffect(progress) {
+
+        if (!isDragging) {
+            dragProgress = progress
+        }
+    }
+
     Box(
         modifier = modifier
             .height(20.dp)
+
             .onSizeChanged {
                 width = it.width.toFloat()
             }
+
             .pointerInput(Unit) {
+
                 detectDragGestures(
 
+                    onDragStart = { offset ->
+
+                        isDragging = true
+
+                        dragProgress = (offset.x / width).coerceIn(0f, 1f)
+
+                        onProgressChanged(
+                            dragProgress
+                        )
+                    },
+
                     onDragEnd = {
-                        onSeekFinished(progress)
+
+                        isDragging = false
+
+                        onSeekFinished(
+                            dragProgress
+                        )
                     }
 
                 ) { change, _ ->
 
-                    val p = (change.position.x / width).coerceIn(0f, 1f)
+                    val newProgress = (change.position.x / width).coerceIn(0f, 1f)
 
-                    onProgressChanged(p)
+                    dragProgress = newProgress
+
+                    onProgressChanged(
+                        newProgress
+                    )
                 }
-            }
-    ) {
+            }) {
 
         // Background
         Box(

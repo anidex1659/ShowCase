@@ -168,16 +168,11 @@ fun MedialPlean(
     val player = PlayerGraph.playerManager
 
 
-    val progress =
-
-        if (state.duration > 0)
-
-            state.currentPosition.toFloat() /
-                    state.duration
-
-        else
-
-            0f
+    val progress = if (state.duration > 0L) {
+        state.currentPosition.toFloat() / state.duration.toFloat()
+    } else {
+        0f
+    }
 
     Box(
         Modifier
@@ -191,7 +186,17 @@ fun MedialPlean(
         Column() {
             Box(Modifier.fillMaxWidth()) {
                 SeekBar(
-                    progress, {}, {},
+                    progress,
+                    onProgressChanged = { newProgress ->
+                        // Optional: update preview position
+                    },
+                    onSeekFinished = { finalProgress ->
+
+                        playerViewModel.seekToProgress(
+                            finalProgress
+                        )
+
+                    },
                     modifier = Modifier
                         .fillMaxWidth(0.7f)
                         .height(10.dp)

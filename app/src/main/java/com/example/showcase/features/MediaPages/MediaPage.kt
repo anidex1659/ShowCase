@@ -14,11 +14,13 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -54,6 +56,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -63,8 +66,10 @@ import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
+import com.example.showcase.R
 import com.example.showcase.core.progresmanager.ProgressManager
 import com.example.showcase.features.HomeScreen.BootomBAR
+import com.example.showcase.features.HomeScreen.TopBar
 import com.example.showcase.features.HomeScreen.repo.HomeRepository
 import com.example.showcase.features.HomeScreen.viewmodel.HomeViewModel
 import com.example.showcase.features.HomeScreen.viewmodel.HomeViewModelFactory
@@ -85,7 +90,7 @@ import com.example.showcase.ui.navigation.PlayerRoute
 import com.example.showcase.ui.navigation.PlayerType
 import com.example.showcase.ui.navigation.SeriesInfoRoute
 import com.example.showcase.ui.theme.VMocha
-
+import kotlinx.coroutines.delay
 
 
 //@Preview(showSystemUi = true, showBackground = true)
@@ -144,35 +149,39 @@ fun MediaPage(navController: NavHostController,Show : String) {
     val media = uiState.media
 
 
-    Box(Modifier.fillMaxSize()) {
-
-
+    Box(Modifier
+        .fillMaxSize()
+        .background(VMocha.Crust)) {
 
         Column() {
+
+            Spacer(Modifier.padding(2.dp))
 
             HeroCarousel2(media,navController)
             
             Spacer(Modifier.padding(2.dp))
 
-            Box(
-                Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-                    .background(shape = RoundedCornerShape(20.dp), color = VMocha.Crust)
-            )
-            {
-                TypewriterText(
-                    "Movies",
-                    Modifier
-                        .fillMaxSize()
-                        .align(Alignment.Center)
-                        .padding(vertical = 10.dp),
-                    fontSize = 20.sp,
-                    textAlign = TextAlign.Center,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = VMocha.Text
-                )
-            }
+            TopBar(navController,progress)
+
+//            Box(
+//                Modifier
+//                    .fillMaxWidth()
+//                    .height(50.dp)
+//                    .background(shape = RoundedCornerShape(20.dp), color = VMocha.Crust)
+//            )
+//            {
+//                TypewriterText(
+//                    "Movies",
+//                    Modifier
+//                        .fillMaxSize()
+//                        .align(Alignment.Center)
+//                        .padding(vertical = 10.dp),
+//                    fontSize = 20.sp,
+//                    textAlign = TextAlign.Center,
+//                    fontWeight = FontWeight.ExtraBold,
+//                    color = VMocha.Text
+//                )
+//            }
 
             Spacer(Modifier.padding(2.dp))
 
@@ -219,7 +228,7 @@ fun MediaPage(navController: NavHostController,Show : String) {
                 }
             }
 
-            BootomBAR(navController,progress)
+
 
         }
 
@@ -412,7 +421,8 @@ fun HeroCarousel2(
     ) {
     val pagerState = rememberPagerState { media.size }
     HorizontalPager(
-        state = pagerState
+        state = pagerState,
+        contentPadding = PaddingValues(vertical = 10.dp, horizontal = 5.dp)
     ) { page ->
 
         Herocard(
@@ -437,6 +447,30 @@ private fun Herocard(
     onPlay: () -> Unit,
     info: String
 ) {
+
+    var expanded by remember {
+        mutableStateOf(false)
+    }
+
+    val transition = updateTransition(expanded, label = "")
+
+    val widthFraction by transition.animateFloat(
+        transitionSpec = { tween(600) },
+        label = ""
+    ) {
+        if (it) 0.9f else 0.18f
+    }
+
+    LaunchedEffect(expanded) {
+        if(!expanded){
+            delay(2000)
+            expanded=true
+        }else {
+            delay(8000)
+            expanded=false
+        }
+    }
+
     Card(
     Modifier
         .height(250.dp)
@@ -452,18 +486,6 @@ private fun Herocard(
             modifier = Modifier.clip(shape = RoundedCornerShape(20.dp))
         )
 
-        var expanded by remember {
-            mutableStateOf(false)
-        }
-
-        val transition = updateTransition(expanded, label = "")
-
-        val widthFraction by transition.animateFloat(
-            transitionSpec = { tween(600) },
-            label = ""
-        ) {
-            if (it) 0.9f else 0.18f
-        }
 
         Box(
             modifier = Modifier
@@ -471,7 +493,7 @@ private fun Herocard(
                 .height(65.dp)
                 .fillMaxWidth(widthFraction)
                 .background(
-                    VMocha.Mantle, RoundedCornerShape(20, 100, 100, 20)
+                    VMocha.Mantle, RoundedCornerShape(0, 100, 100, 20)
                 )
         )
         {
@@ -497,16 +519,6 @@ private fun Herocard(
                             fontWeight = FontWeight.ExtraBold,
                             // modifier = Modifier.fillMaxWidth()
                         )
-
-                        TypewriterText(
-                            info,  // title ,
-                            color = VMocha.Text,
-                            maxLines = 1,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                            // modifier = Modifier.fillMaxWidth()
-                        )
-
                     }
                 }
 

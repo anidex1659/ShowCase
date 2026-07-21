@@ -162,6 +162,7 @@ class PlayerManager(
 
     val resizeMode = _resizeMode.asStateFlow()
 
+
     fun setResizeMode(mode: VideoResizeMode) {
         _resizeMode.value = mode
     }
@@ -337,6 +338,7 @@ class PlayerManager(
         _playbackSpeed.value = speed
     }
 
+
     fun play() {
 
         player.play()
@@ -379,17 +381,25 @@ class PlayerManager(
     }
 
     fun replay() {
-
         seekTo(0)
-
         play()
     }
 
     fun seekTo(position: Long) {
 
-        player.seekTo(position)
-    }
+        val newPosition = position.coerceIn(
+            0L,
+            player.duration.coerceAtLeast(0L)
+        )
 
+        player.seekTo(newPosition)
+
+        _playerState.update {
+            it.copy(
+                currentPosition = newPosition
+            )
+        }
+    }
     fun seekForward() {
 
         player.seekTo(

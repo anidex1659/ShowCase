@@ -2,7 +2,6 @@ package com.example.showcase.features.Player.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,16 +14,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBackIosNew
-import androidx.compose.material.icons.filled.ArrowForwardIos
-import androidx.compose.material.icons.filled.FitScreen
-import androidx.compose.material.icons.filled.KeyboardDoubleArrowLeft
-import androidx.compose.material.icons.filled.KeyboardDoubleArrowRight
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.MusicNote
-import androidx.compose.material.icons.filled.PauseCircle
-import androidx.compose.material.icons.filled.PlayCircle
-import androidx.compose.material.icons.filled.Subtitles
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -41,7 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -57,8 +46,6 @@ import com.example.showcase.features.Player.model.PlayerState
 import com.example.showcase.ui.navigation.PlayerGraph
 import com.example.showcase.ui.theme.VMocha
 import kotlinx.coroutines.delay
-
-
 
 
 @Composable
@@ -81,7 +68,7 @@ fun fullScreenPlayer(playerManager: PlayerManager, playerViewModel: PlayerViewMo
     Box(
         Modifier.fillMaxSize()
     ){
-        player(playerManager, playerViewModel, modifier = Modifier.fillMaxSize(), isfullscreen = true)
+        player(playerManager, playerViewModel, modifier = Modifier.fillMaxSize(), isfullscreen = true, playerInfoState = playerInfoState)
         if (overlayVisible)
             fullScreenOverlay({
                 playerManager.togglePlayPause()
@@ -94,7 +81,7 @@ fun fullScreenPlayer(playerManager: PlayerManager, playerViewModel: PlayerViewMo
 @Composable
  fun fullScreenOverlay(
     Onclick: () -> Unit, playerInfoState: PlayerInfoState,
-    state: PlayerState
+    state: PlayerState,
 ) {
     Box(
         Modifier
@@ -198,71 +185,102 @@ fun TopControllsV(
     modifier: Modifier,
     playerViewModel: PlayerViewModel,
     playerManager: PlayerManager,
-    ontap: ((Offset) -> Unit)?, ) {
+    playerInfoState: PlayerInfoState
+   ) {
 
 
     val isFullscreen by playerViewModel.isFullscreen.collectAsState()
+    val state by playerViewModel.state.collectAsState()
+    val ractio by playerManager.resizeMode.collectAsState()
+    var spedUP by remember < MutableState<Boolean>>{
+        mutableStateOf(false)
+    }
+
 
     Box(
         modifier = modifier
     ) {
 
-
-        Row(
-            Modifier.align(Alignment.TopStart)
-
-        ) {
-            IconButton(
-                //Flip {full screen}
-                onClick = {
-                    playerViewModel.toggleFullscreen()
-                },
-            ) {
-                if (isFullscreen) {
-                    Icon(
-                        Icons.Default.ArrowBack,
-                        contentDescription = null,
-                        tint = VMocha.Text,
-                        modifier = Modifier.scale(0.7f)
+        Row(Modifier.fillMaxWidth()) {
+            IconButton(onClick = { playerViewModel.toggleFullscreen() }) {
+                Icon(
+                    Icons.Default.ArrowBack,
+                    "",
+                    tint = VMocha.Text
+                )
+            }
+            if (state.media?.type == MediaType.EPISODE) {
+                Row(
+                    Modifier.padding(10.dp)
+                ) {
+                    Text(
+                        playerInfoState.series?.metadata?.title ?: " ",
+                        color = VMocha.Text,
+                        fontSize = 20.sp,
+                        textAlign = TextAlign.Start
                     )
-                } else {
-                    Icon(
-                        Icons.Default.FitScreen,
-                        contentDescription = null,
-                        tint = VMocha.Text,
-                        modifier = Modifier.scale(0.7f)
+                    Text(
+                        " | ",
+                        color = VMocha.Text,
+                        fontSize = 20.sp,
+                        textAlign = TextAlign.Start
                     )
+                    Text(
+                        state.media?.title ?: " ",
+                        color = VMocha.Text,
+                        fontSize = 20.sp,
+                        textAlign = TextAlign.Start
+                    )
+
                 }
+
+            } else {
+                Text(
+                    playerInfoState.movie?.metadata?.title ?: " "
+                    ?: " ",
+                    color = VMocha.Text,
+                    fontSize = 20.sp,
+                    modifier = Modifier.padding(top = 10.dp)
+                )
             }
 
-
         }
+
         Column (
             Modifier.align(Alignment.CenterStart),
         ) {
             IconButton(
-                //Flip {full screen}
+                //2X button
                 onClick = {
-                    playerViewModel.toggleFullscreen()
+                    if (spedUP) {
+                        playerManager.setPlaybackSpeed(1.0f)
+                        spedUP = false
+                    } else {
+                        playerManager.setPlaybackSpeed(2.0f)
+                        spedUP = true
+                    }
                 },
             ) {
-                if (isFullscreen) {
+                if (spedUP) {
+                    Icon(
+                        painter = painterResource(R.drawable.twox),
+                        contentDescription = null,
+                        tint = VMocha.Red,
+                        modifier = Modifier.scale(0.7f)
+                    )
+                } else {
                     Icon(
                         painter = painterResource(R.drawable.twox),
                         contentDescription = null,
                         tint = VMocha.Text,
                         modifier = Modifier.scale(0.7f)
                     )
-                } else {
-                    Icon(
-                        Icons.Default.FitScreen,
-                        contentDescription = null,
-                        tint = VMocha.Text,
-                        modifier = Modifier.scale(0.7f)
-                    )
                 }
             }
         }
+
+        //^^ Starting Controls======================================================================
+
         Column (
             Modifier.align(Alignment.CenterEnd),
         ) {
@@ -302,25 +320,125 @@ fun TopControllsV(
                 )
             }
 
+            var SizeModeColor by remember<MutableState<Color>> {
+                mutableStateOf(VMocha.Text)
+            }
+            if (ractio == PlayerManager.VideoResizeMode.FIT) SizeModeColor = VMocha.Text
+            if (ractio == PlayerManager.VideoResizeMode.FILL) SizeModeColor = VMocha.Red
+            if (ractio == PlayerManager.VideoResizeMode.ZOOM) SizeModeColor = VMocha.Lavender
+            if (ractio == PlayerManager.VideoResizeMode.STRETCH) SizeModeColor = VMocha.Green
+
+            //^^ Calculat Color for ResizeButton
+
             IconButton(
 
-                onClick = {playerManager.cycleResizeMode()},
+                onClick = { playerManager.cycleResizeMode() },
             ) {
-                Icon(
-                    painter = painterResource(R.drawable.width),
-                    contentDescription = null,
-                    tint = VMocha.Text,
-                    modifier = Modifier.scale(0.7f)
-                )
+                    Icon(
+                        painter = painterResource(R.drawable.width),
+                        contentDescription = null,
+                        tint = SizeModeColor,
+                        modifier = Modifier.scale(0.7f)
+                    )
+
             }
 
+            //^^ EndIng Controls====================================================================
+        }
 
+    }
+}
+
+
+@Composable
+fun CenterControlls(
+    playerManager: PlayerManager,
+    playerViewModel: PlayerViewModel,
+    state: PlayerState,
+    modifier: Modifier = Modifier
+        .fillMaxWidth()
+        .padding(bottom = 12.dp)
+) {
+
+
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.Center
+    ) {
+
+
+        IconButton(
+            //10sec <<
+            onClick = {playerManager.seekBackward()},
+            // modifier = Modifier.align(Alignment.Center)
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.previous),
+                contentDescription = null,
+                tint = VMocha.Text,
+                modifier = Modifier.scale(0.8f)
+            )
         }
 
 
+        IconButton(
+            //last ep
+            onClick = {playerViewModel.playPreviousEpisode()},
+            // modifier = Modifier.align(Alignment.Center)
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.previousep),
+                contentDescription = null,
+                tint = VMocha.Text,
+                modifier = Modifier.scale(0.8f)
+            )
+        }
+
+        IconButton(
+            //play pause
+            onClick = { playerManager.togglePlayPause()}
+        ) {
+            Icon(
+                painter =
+                    if (state.isPlaying){
+                        painterResource(R.drawable.pause)}
+                    else{
+                        painterResource(R.drawable.play)},
+                contentDescription = null,
+                tint = VMocha.Text,
+                modifier = Modifier.size(150.dp)
+
+            )
+        }
+
+        IconButton(
+            //next EP
+            onClick = {playerViewModel.playNextEpisode()},
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.nextep),
+                contentDescription = null,
+                tint = VMocha.Text,
+                modifier = Modifier.scale(0.8f)
+            )
+        }
+
+        IconButton(
+            //10sec >>
+            onClick = {playerManager.seekForward()},
+            // modifier = Modifier.align(Alignment.Center)
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.next),
+                contentDescription = null,
+                tint = VMocha.Text,
+                modifier = Modifier.scale(0.8f)
+            )
+        }
 
 
     }
+
 }
 
 
@@ -348,153 +466,52 @@ fun BootomControlls(modifier: Modifier, playerViewModel: PlayerViewModel) {
         modifier = modifier
     ) {
 
-
         Column(
             Modifier
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter)
 
         ) {
-            Box(
-                Modifier
-                    .background(VMocha.Mantle.copy(0.5f), shape = RoundedCornerShape(20.dp, 20.dp))
+            val progress = if (state.duration > 0L) {
+                state.currentPosition.toFloat() / state.duration.toFloat()
+            } else {
+                0f
+            }
+            SeekBar(
+                progress,
+                onProgressChanged = { newProgress ->
+                    // Optional: update preview position
+                },
+                onSeekFinished = { finalProgress ->
+
+                    playerViewModel.seekToProgress(
+                        finalProgress
+                    )
+
+                },
+                modifier = Modifier
                     .fillMaxWidth()
-                    .height(30.dp)
+                    .weight(0.9f)
+                    .height(10.dp)
+                    .background(
+                        VMocha.Surface1, RoundedCornerShape(20.dp)
+                    )
             )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.Bottom
+                //.padding(vertical = 5.dp, horizontal = 10.dp)
+            ) {
+                Text(
+                    formatTime(state.currentPosition)+" / "+formatTime(state.duration),
+                    modifier = Modifier.padding(start = 5.dp, end = 5.dp),
+                    color = VMocha.Text,
+                    textAlign = TextAlign.End
+                )
 
-            {
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .fillMaxWidth()
-                    //.padding(vertical = 5.dp, horizontal = 10.dp)
-                ) {
-                    Text(
-                        formatTime(state.currentPosition),
-                        modifier = Modifier.padding(start =5.dp, end = 5.dp),
-                        color = VMocha.Text,
-                        textAlign = TextAlign.End
-                    )
-                    var seekProgress by remember {
-                        mutableFloatStateOf(progress)
-                    }
-
-                    SeekBar(
-                        progress = seekProgress,
-
-                        onProgressChanged = {
-                            seekProgress = it
-                        },
-
-                        onSeekFinished = {
-                            player.seekTo(
-                                (it * state.duration).toLong()
-                            )
-                            playerViewModel.seek((it* state.duration).toLong())
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(0.9f)
-                            .height(10.dp)
-                            .background(
-                                VMocha.Surface1, RoundedCornerShape(20.dp)
-                            )
-                    )
-
-                    Text(
-                        formatTime(state.duration),
-                        modifier = Modifier.padding(start =5.dp, end = 5.dp),
-                        color = VMocha.Text,
-                        textAlign = TextAlign.End
-                    )
-
-
-                }
             }
         }
-
-
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 12.dp),
-            horizontalArrangement = Arrangement.Center
-        ) {
-
-
-            IconButton(
-                //10sec <<
-                onClick = {player.seekBackward()},
-                // modifier = Modifier.align(Alignment.Center)
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.previous),
-                    contentDescription = null,
-                    tint = VMocha.Text,
-                    modifier = Modifier.scale(0.8f)
-                )
-            }
-
-
-            IconButton(
-                //last ep
-                onClick = {playerViewModel.playPreviousEpisode()},
-                // modifier = Modifier.align(Alignment.Center)
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.previousep),
-                    contentDescription = null,
-                    tint = VMocha.Text,
-                    modifier = Modifier.scale(0.8f)
-                )
-            }
-
-            IconButton(
-                //play pause
-                onClick = { player.togglePlayPause()}
-            ) {
-                Icon(
-                    painter =
-                        if (state.isPlaying){
-                           painterResource(R.drawable.pause)}
-                        else{
-                            painterResource(R.drawable.play)},
-                    contentDescription = null,
-                    tint = VMocha.Text,
-                    modifier = Modifier.size(150.dp)
-
-                )
-            }
-
-            IconButton(
-                //next EP
-                onClick = {playerViewModel.playNextEpisode()},
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.nextep),
-                    contentDescription = null,
-                    tint = VMocha.Text,
-                    modifier = Modifier.scale(0.8f)
-                )
-            }
-
-            IconButton(
-                //10sec >>
-                onClick = {player.seekForward()},
-                // modifier = Modifier.align(Alignment.Center)
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.next),
-                    contentDescription = null,
-                    tint = VMocha.Text,
-                    modifier = Modifier.scale(0.8f)
-                )
-            }
-
-
-        }
-
 
     }
 }

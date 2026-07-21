@@ -37,6 +37,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -390,6 +391,107 @@ fun BootomBAR(
                     topEnd = 0.dp,
                     bottomEnd = 20.dp,
                     bottomStart = 20.dp
+                )
+            ),
+
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        IconButton(
+            onClick = {navController.navigate(HomeRoute)}) {
+
+            Icon(
+                imageVector = Icons.Default.ArrowBack,
+                contentDescription = null, tint = VMocha.Text
+            )
+        }
+
+        Row {
+
+            IconButton(
+                onClick = {navController.navigate(LibraryRoute)}
+            ) {
+
+                Icon(
+                    imageVector = Icons.Default.VideoLibrary,
+                    contentDescription = null,
+                    tint = VMocha.Text
+                )
+            }
+
+            IconButton(
+                onClick = {
+
+                }
+            ) {
+
+                Icon(
+                    imageVector = Icons.Default.Sync,
+                    contentDescription = null,
+                    tint = VMocha.Text,
+                )
+            }
+            IconButton(
+                onClick = {}
+            ) {
+
+                Icon(
+                    imageVector = Icons.Default.Settings,
+                    contentDescription = null,
+                    tint = VMocha.Text
+                )
+            }
+        }
+    }
+
+}
+
+@Composable
+fun TopBar(
+    navController: NavHostController,
+    progress: ScanProgress,
+    modifier: Modifier = Modifier
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "")
+
+    val rotation = if (progress.visible) {
+
+        infiniteTransition.animateFloat(
+
+            initialValue = 0f,
+            targetValue = 360f,
+
+            animationSpec = infiniteRepeatable(
+                animation = tween(
+                    durationMillis = 1000,
+                    easing = LinearEasing
+                ),
+                repeatMode = RepeatMode.Restart
+            ),
+
+            label = ""
+
+        ).value
+
+    } else {
+
+        0f
+    }
+
+    val tintcolor = if (progress.visible) {
+        VMocha.Red
+    } else {
+        VMocha.Text
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                color = VMocha.Base,
+                shape = RoundedCornerShape(
+                    20.dp
                 )
             ),
 

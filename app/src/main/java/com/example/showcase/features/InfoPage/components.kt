@@ -92,7 +92,8 @@ fun BackDroupCard() {
                         .height(40.dp)
                         .width(80.dp)
                         .background(
-                            VMocha.Base, RoundedCornerShape(0, 50, 0, 50)
+                            shape =  RoundedCornerShape(0, 50, 0, 50),
+                            color = VMocha.Crust
                         )
                 ) {
                     Text(
@@ -114,7 +115,8 @@ fun BackDroupCard() {
                         .height(80.dp)
                         .width(80.dp)
                         .background(
-                            VMocha.Base, RoundedCornerShape(100)
+                            shape =  RoundedCornerShape(100),
+                            color = VMocha.Crust
                         )
                 ) {
                     IconButton(

@@ -355,13 +355,6 @@ private fun ResultCard( result: TmdbSeriesResult,selected: Boolean, onClick: () 
                     contentScale = ContentScale.Crop
                 )
 
-//                Image(
-//                    painter = painterResource(R.drawable.folder),
-//                    contentDescription = null,
-//                    modifier = Modifier.fillMaxSize(),
-//                    contentScale = ContentScale.Crop
-//                )
-
             }
 
             Spacer(Modifier.padding(10.dp))

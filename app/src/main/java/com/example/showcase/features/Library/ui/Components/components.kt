@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ImageSearch
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Search
@@ -64,8 +65,6 @@ fun LibraryPanel(
     onScanLibrary: (LibraryUiModel) -> Unit,
     progress: ScanProgress
 ) {
-
-
 
     if (libraries.isNotEmpty())
         LazyColumn(
@@ -260,6 +259,21 @@ fun SeriesCard(
                 ) {
                     Icon(
                         Icons.Default.Search,
+                        null,
+                        tint = VMocha.Text
+                    )
+                }
+                IconButton(
+                    onClick = {
+                        DialogManager.show(
+                            GlobalDialog.EditArtwork(
+                                series.series.id
+                            )
+                        )
+                    }
+                ) {
+                    Icon(
+                        Icons.Default.ImageSearch,
                         null,
                         tint = VMocha.Text
                     )

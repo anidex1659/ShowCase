@@ -7,7 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
-import com.example.showcase.features.MetaData.data.database.SeriesComplete
+import com.example.showcase.features.MetaData.data.database.relation.SeriesComplete
 import com.example.showcase.features.MetaData.data.database.entity.series.ArtworkEntity
 import com.example.showcase.features.MetaData.data.database.entity.series.EpisodeEntity
 import com.example.showcase.features.MetaData.data.database.entity.LibraryEntity
@@ -181,6 +181,44 @@ interface ShowcaseDao {
         tmdbId: Int
     )
 
+    @Query("""
+    DELETE FROM episodes
+    WHERE seriesId = :seriesId
+""")
+    suspend fun deleteEpisodesBySeriesId(seriesId: Long)
+
+
+    @Query("""
+    SELECT * FROM series
+    WHERE libraryId = :libraryId
+""")
+    suspend fun getSeriesByLibraryId(
+        libraryId: Long
+    ): List<SeriesEntity>
+
+    @Query("""
+    SELECT * FROM movies
+    WHERE libraryId = :libraryId
+""")
+    suspend fun getMoviesByLibraryId(
+        libraryId: Long
+    ): List<MovieEntity>
+
+    @Query("""
+    DELETE FROM series
+    WHERE id = :seriesId
+""")
+    suspend fun deleteSeriesById(
+        seriesId: Long
+    )
+
+    @Query("""
+    DELETE FROM movies
+    WHERE id = :movieId
+""")
+    suspend fun deleteMovieById(
+        movieId: Long
+    )
     //^^Series =====================================================================================
 
 

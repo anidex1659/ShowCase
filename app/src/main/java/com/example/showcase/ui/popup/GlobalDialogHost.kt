@@ -3,7 +3,7 @@ package com.example.showcase.ui.popup
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-//import com.example.showcase.ui.popup.Dialogs.Ui.EditArtworkDialog
+import com.example.showcase.ui.popup.Dialogs.Ui.EditArtworkDialog
 import com.example.showcase.ui.popup.Dialogs.Ui.EditSeriesMetadataDialog
 import com.example.showcase.ui.popup.Dialogs.Ui.IdentifySeriesDialog
 
@@ -17,12 +17,12 @@ fun GlobalDialogHost() {
 
         is GlobalDialog.EditArtwork -> {
 
-//            EditArtworkDialog(
-//                seriesId = current.seriesId,
-//                onDismiss = {
-//                    DialogManager.dismiss()
-//                }
-//            )
+            EditArtworkDialog (
+                seriesId = current.seriesId,
+                onDismiss = {
+                    DialogManager.dismiss()
+                }
+            )
         }
 
         is GlobalDialog.EditSeriesMetadata -> {
@@ -48,3 +48,4 @@ fun GlobalDialogHost() {
         GlobalDialog.None -> {}
     }
 }
+

@@ -1,4 +1,4 @@
-package com.example.showcase.features.MetaData.data.database
+package com.example.showcase.features.MetaData.data.database.relation
 
 import androidx.room.Embedded
 import androidx.room.Relation

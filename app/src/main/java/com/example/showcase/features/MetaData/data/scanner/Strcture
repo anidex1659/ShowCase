@@ -1,0 +1,99 @@
+
+
+ Series Flow=======================================================================================
+
+                    SERIES FILE
+                         │
+                         ▼
+              ┌────────────────────┐
+              │   SeriesDetector   │
+              └─────────┬──────────┘
+                        │
+                        ▼
+                  ScanResult
+                        │
+                        ├── Series Name
+                        ├── Season
+                        ├── Episode
+                        ├── File URI
+                        └── Folder URI
+                        │
+                        ▼
+                 Search Series DB
+                        │
+                ┌───────┴────────┐
+                │                │
+             EXISTS           NEW
+                │                │
+                │                ▼
+                │         Insert Series
+                │                │
+                │                ▼
+                │          Fetch TMDB
+                │                │
+                │                ▼
+                │        Save metadata.json
+                │                │
+                │                ▼
+                │         Download Artwork
+                │                │
+                └───────┬────────┘
+                        │
+                        ▼
+                 Load Metadata
+                        │
+                        ▼
+                 Search Episode DB
+                        │
+                ┌───────┴────────┐
+                │                │
+             EXISTS           NEW
+                │                │
+                │                ▼
+                │          Get Episode
+                │             Title
+                │                │
+                │                ▼
+                │        Insert Episode
+                │                │
+                └───────┬────────┘
+                        │
+                        ▼
+                  Update Count
+
+Movie Flow==========================================================================================
+
+                  MediaFile
+                      │
+                      ▼
+                  MovieDetector
+                      │
+                      ▼
+                  MovieScanResult
+                      │
+                      ├── title
+                      ├── year
+                      ├── filePath
+                      └── folderPath
+                      │
+                      ▼
+                  Search Movie DB
+                      │
+                      ├── EXISTS
+                      │      │
+                      │      ▼
+                      │    Check TMDB ID
+                      │
+                      └── NEW
+                             │
+                             ▼
+                         Insert Movie
+                             │
+                             ▼
+                         Fetch TMDB
+                             │
+                             ▼
+                         Save Metadata
+                             │
+                             ▼
+                         Download Artwork

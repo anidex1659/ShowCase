@@ -134,6 +134,97 @@ class ArtworkDownloader(
         }
     }
 
+    suspend fun replaceSeriesArtwork(
+        seriesId: Long,
+        artworkType: String,
+        imageUrl: String,
+        storageLocation: String
+    ): Boolean {
+
+        val fileName =
+            when (artworkType) {
+
+                "poster" ->
+                    "poster.jpg"
+
+                "backdrop" ->
+                    "backdrop.jpg"
+
+                "banner" ->
+                    "banner.jpg"
+
+                "thumb" ->
+                    "thumb.jpg"
+
+                "logo" ->
+                    "logo.png"
+
+                else ->
+                    return false
+            }
+
+        val mimeType =
+            if (artworkType == "logo")
+                "image/png"
+            else
+                "image/jpeg"
+
+        return downloadImage(
+
+            mediaId = seriesId,
+
+            artworkType = artworkType,
+
+            imageUrl = imageUrl,
+
+            storageLocation = storageLocation,
+
+            fileName = fileName,
+
+            mimeType = mimeType
+
+        )
+    }
+
+    suspend fun replaceMovieArtwork(
+        movieId: Long,
+        artworkType: String,
+        imageUrl: String,
+        storageLocation: String
+    ): Boolean {
+
+        val fileName =
+            when (artworkType) {
+
+                "poster" ->
+                    "poster.jpg"
+
+                "backdrop" ->
+                    "backdrop.jpg"
+
+                "logo" ->
+                    "logo.png"
+
+                else ->
+                    return false
+            }
+
+        val mimeType =
+            if (artworkType == "logo")
+                "image/png"
+            else
+                "image/jpeg"
+
+        return downloadMovieImage(
+            movieId = movieId,
+            artworkType = artworkType,
+            imageUrl = imageUrl,
+            storageLocation = storageLocation,
+            fileName = fileName,
+            mimeType = mimeType
+        )
+    }
+
     suspend fun downloadPoster(
 
         mediaId: Long,

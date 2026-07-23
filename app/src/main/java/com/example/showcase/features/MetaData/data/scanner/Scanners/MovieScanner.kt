@@ -1,4 +1,4 @@
-package com.example.showcase.features.MetaData.data.scanner
+package com.example.showcase.features.MetaData.data.scanner.Scanners
 
 import android.util.Log
 import com.example.showcase.core.progresmanager.ProgressManager

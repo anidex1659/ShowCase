@@ -1,6 +1,5 @@
 package com.example.showcase.features.Library.ui
 
-import android.R
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -23,7 +22,6 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -34,11 +32,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.showcase.core.progresmanager.ProgressManager
 import com.example.showcase.core.progresmanager.ScanProgress
@@ -59,11 +54,11 @@ import com.example.showcase.features.MetaData.data.repository.metadata.movie.Mov
 import com.example.showcase.features.MetaData.data.repository.metadata.sires.SeriesRepository
 import com.example.showcase.features.MetaData.data.scanner.Detectors.MovieDetector
 import com.example.showcase.features.MetaData.data.scanner.Detectors.MusicDetector
-import com.example.showcase.features.MetaData.data.scanner.LibraryScanner
-import com.example.showcase.features.MetaData.data.scanner.MovieScanner
-import com.example.showcase.features.MetaData.data.scanner.MusicScanner
+import com.example.showcase.features.MetaData.data.scanner.Scanners.LibraryScanner
+import com.example.showcase.features.MetaData.data.scanner.Scanners.MovieScanner
+import com.example.showcase.features.MetaData.data.scanner.Scanners.MusicScanner
 import com.example.showcase.features.MetaData.data.scanner.ScannerManager
-import com.example.showcase.features.MetaData.data.scanner.SeriesDetector
+import com.example.showcase.features.MetaData.data.scanner.Detectors.SeriesDetector
 import com.example.showcase.features.Player.model.storage.ArtworkStorageManager
 import com.example.showcase.features.Player.model.storage.MetadataJsonManager
 import com.example.showcase.features.Player.model.storage.MovieMetadataJsonManager

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.showcase.features.MetaData.data.database.dao.ShowcaseDao
 import com.example.showcase.features.MetaData.data.remote.TmdbRemoteDataSource
+import com.example.showcase.features.MetaData.data.repository.Artwork.ArtworkDownloader
 import com.example.showcase.ui.popup.Dialogs.Repository.ArtworkRepository
 import com.example.showcase.ui.popup.Dialogs.Repository.IdentifySeriesRepository
 
@@ -30,12 +31,12 @@ class IdentifySeriesViewModelFactory(
 }
 
 
-
 class EditArtworkViewModelFactory(
 
     private val dao: ShowcaseDao,
+    private val artworkDownloader: ArtworkDownloader,
 
-    private val repository: ArtworkRepository
+    private val remote: TmdbRemoteDataSource
 
 ) : ViewModelProvider.Factory {
 
@@ -44,10 +45,9 @@ class EditArtworkViewModelFactory(
     ): T {
 
         return EditArtworkViewModel(
-
             dao = dao,
-
-            repository = repository
+            remote = remote,
+            artworkDownloader
 
         ) as T
     }

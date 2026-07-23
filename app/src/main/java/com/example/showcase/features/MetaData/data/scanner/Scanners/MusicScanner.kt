@@ -1,4 +1,4 @@
-package com.example.showcase.features.MetaData.data.scanner
+package com.example.showcase.features.MetaData.data.scanner.Scanners
 
 import com.example.showcase.features.MetaData.data.database.dao.ShowcaseDao
 import com.example.showcase.features.MetaData.data.database.entity.music.MusicEntity

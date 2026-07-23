@@ -1,7 +1,7 @@
-package com.example.showcase.features.MetaData.data.scanner
+package com.example.showcase.features.MetaData.data.scanner.Detectors
 
 import com.example.showcase.features.MetaData.data.model.MediaFile
-
+import com.example.showcase.features.MetaData.data.scanner.ScanResult
 
 class SeriesDetector {
 
@@ -53,20 +53,20 @@ class SeriesDetector {
 
         return ScanResult(
 
-            seriesTitle = seriesName,
+			seriesTitle = seriesName,
 
-            seasonNumber =
-                extractSeason(withoutJunk),
+			seasonNumber =
+				extractSeason(withoutJunk),
 
-            episodeNumber =
-                extractEpisode(withoutJunk),
+			episodeNumber =
+				extractEpisode(withoutJunk),
 
-            filePath =
-                mediaFile.uri.toString(),
+			filePath =
+				mediaFile.uri.toString(),
 
-            folderPath =
-                mediaFile.parentFolder ?: ""
-        )
+			folderPath =
+				mediaFile.parentFolder ?: ""
+		)
     }
 
     private fun cleanFileName(

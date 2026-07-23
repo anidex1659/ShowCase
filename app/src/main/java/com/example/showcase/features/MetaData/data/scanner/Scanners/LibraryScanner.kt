@@ -1,4 +1,4 @@
-package com.example.showcase.features.MetaData.data.scanner
+package com.example.showcase.features.MetaData.data.scanner.Scanners
 
 import android.util.Log
 import com.example.showcase.core.progresmanager.ProgressManager
@@ -11,6 +11,7 @@ import com.example.showcase.features.MetaData.data.remote.TmdbRemoteDataSource
 import com.example.showcase.features.MetaData.data.repository.Artwork.ArtworkDownloader
 import com.example.showcase.features.MetaData.data.repository.metadata.sires.MetadataRepository
 import com.example.showcase.features.MetaData.data.repository.metadata.MetadataStorageRepository
+import com.example.showcase.features.MetaData.data.scanner.Detectors.SeriesDetector
 import com.example.showcase.features.Player.model.storage.StorageLocationManager
 
 
@@ -243,3 +244,29 @@ class LibraryScanner(
         }
     }
 }
+
+//                          LibraryEntity
+//                          │
+//                          ▼
+//                          Update Progress
+//                          │
+//                          ▼
+//                          Cleanup Missing Database Entries
+//                          │
+//                          ▼
+//                          Open SAF Root Folder
+//                          │
+//                          ▼
+//                          Recursively Scan Files
+//                          │
+//                          ▼
+//                          List<MediaFile>
+//                          │
+//                          ▼
+//                          Check Library Type
+//                          │
+//                          ├──── Series ────► LibraryScanner
+//                          │
+//                          ├──── Movies ────► MovieScanner
+//                          │
+//                          └──── Music ─────► MusicScanner

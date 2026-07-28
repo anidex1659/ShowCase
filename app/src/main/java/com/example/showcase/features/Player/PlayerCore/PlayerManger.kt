@@ -51,6 +51,8 @@ class PlayerManager(
     var onPlaybackEnded: (() -> Unit)? = null  // notify view model on episode finish to play next ep
     var onProgress: ((PlayerState) -> Unit)? = null // notify view model to store episode playback
 
+    var onError: ((PlayerState) -> Unit)? = null // notify failer to play video
+
     enum class VideoResizeMode {
         FIT,
         FILL,
@@ -152,13 +154,16 @@ class PlayerManager(
                         )
 
                     }
+                    onError?.invoke(
+                        _playerState.value
+                    )
                 }
             }
         )
     }
 
-    private val _resizeMode =
-        MutableStateFlow(VideoResizeMode.FIT)
+    val _resizeMode =
+        MutableStateFlow(VideoResizeMode.ZOOM)
 
     val resizeMode = _resizeMode.asStateFlow()
 

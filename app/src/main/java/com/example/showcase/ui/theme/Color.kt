@@ -278,6 +278,7 @@ object Themes {
         Mantle    = Color(0xFF1E1C2D),
         Crust     = Color(0xFF181725)
     )
+
     val RosePineDawn = ShowcasePalette(
 
         Rosewater = Color(0xFFD7827E),

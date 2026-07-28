@@ -55,7 +55,7 @@ data class EpisodeUiModel(
     val episode: EpisodeEntity,
 
     val playback: PlaybackHistoryEntity? = null,
-
+    val plot : String ="",
     val watched: Boolean = false,
 
     val progressPercent: Float = 0f

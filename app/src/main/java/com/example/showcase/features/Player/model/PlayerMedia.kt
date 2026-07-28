@@ -12,7 +12,7 @@ data class PlayerMedia(
     val type: MediaType,
 
     val title: String,
-
+    val plot : String="",
     val videoUri: String,
 
     val poster: String? = null,

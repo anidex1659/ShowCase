@@ -32,7 +32,7 @@ fun AppNavGraph() {
         }
 
         composable<LibraryRoute> {
-            LibraryScreen()
+            LibraryScreen(navController)
         }
 
         composable<MediaRoute> { backStack ->

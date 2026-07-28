@@ -7,47 +7,143 @@ import androidx.documentfile.provider.DocumentFile
 
 class ArtworkRepository {
 
+
     fun getArtworkFiles(
         context: Context,
-        seriesFolderUri: String
+        folderUri: String
     ): List<Pair<String, String?>> {
 
         val folder =
             DocumentFile.fromTreeUri(
                 context,
-                Uri.parse(seriesFolderUri)
+                Uri.parse(folderUri)
             ) ?: return emptyList()
 
-        val showcase =
+        val showcaseFolder =
             folder.findFile(".showcase")
                 ?: return emptyList()
 
-        fun find(
-            fileName: String
-        ): String? {
+        fun find(vararg names: String): String? {
 
-            return showcase
-                .findFile(fileName)
-                ?.uri
-                ?.toString()
+            names.forEach { name ->
+
+                val file =
+                    showcaseFolder.findFile(name)
+
+                if (file != null) {
+                    return file.uri.toString()
+                }
+            }
+
+            return null
         }
 
         return listOf(
 
             "Poster" to
-                    find("poster.jpg"),
+                    find(
+                        "poster.jpg",
+                        "poster.jpeg",
+                        "poster.png"
+                    ),
 
             "Backdrop" to
-                    find("backdrop.jpg"),
+                    find(
+                        "backdrop.jpg",
+                        "backdrop.jpeg",
+                        "backdrop.png"
+                    ),
 
             "Banner" to
-                    find("banner.jpg"),
+                    find(
+                        "banner.jpg",
+                        "banner.jpeg",
+                        "banner.png"
+                    ),
 
             "Thumb" to
-                    find("thumb.jpg"),
+                    find(
+                        "thumb.jpg",
+                        "thumb.jpeg",
+                        "thumb.png"
+                    ),
 
             "Logo" to
-                    find("logo.png")
+                    find(
+                        "logo.png",
+                        "logo.webp",
+                        "logo.jpg"
+                    )
         )
+    }
+
+    fun getArtwork(
+        context: Context,
+        folderUri: String,
+        type: String
+    ): String? {
+
+        val folder =
+            DocumentFile.fromTreeUri(
+                context,
+                Uri.parse(folderUri)
+            ) ?: return null
+
+        val showcaseFolder =
+            folder.findFile(".showcase")
+                ?: return null
+
+        val names =
+            when (type.lowercase()) {
+
+                "poster" ->
+                    listOf(
+                        "poster.jpg",
+                        "poster.jpeg",
+                        "poster.png"
+                    )
+
+                "backdrop" ->
+                    listOf(
+                        "backdrop.jpg",
+                        "backdrop.jpeg",
+                        "backdrop.png"
+                    )
+
+                "banner" ->
+                    listOf(
+                        "banner.jpg",
+                        "banner.jpeg",
+                        "banner.png"
+                    )
+
+                "thumb" ->
+                    listOf(
+                        "thumb.jpg",
+                        "thumb.jpeg",
+                        "thumb.png"
+                    )
+
+                "logo" ->
+                    listOf(
+                        "logo.png",
+                        "logo.webp",
+                        "logo.jpg"
+                    )
+
+                else ->
+                    return null
+            }
+
+        names.forEach { name ->
+
+            showcaseFolder
+                .findFile(name)
+                ?.let {
+                    return it.uri.toString()
+                }
+        }
+
+        return null
     }
 }

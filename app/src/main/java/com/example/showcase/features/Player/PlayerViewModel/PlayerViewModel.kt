@@ -5,72 +5,233 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.showcase.features.InfoPage.uistate.MovieInfoUiModel
 import com.example.showcase.features.InfoPage.uistate.SeriesInfoUiModel
-
 import com.example.showcase.features.Player.PlayerCore.PlayerManager
+import com.example.showcase.features.Player.PlayerCore.VlcPlayerManager
 import com.example.showcase.features.Player.model.AudioTrack
 import com.example.showcase.features.Player.model.MediaType
 import com.example.showcase.features.Player.model.PlayerInfoState
 import com.example.showcase.features.Player.model.PlayerMedia
+import com.example.showcase.features.Player.model.PlayerState
 import com.example.showcase.features.Player.model.SubtitleTrack
 import com.example.showcase.features.Player.model.TrackSheetType
-import com.example.showcase.features.Player.repository.PlayerRepository
+import com.example.showcase.features.Player.PlayerCore.repository.PlayerRepository
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
-import kotlin.collections.get
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
+
+
+enum class PlayerEngine {
+    EXO,
+    VLC
+}
+
 
 class PlayerViewModel(
 
     private val manager: PlayerManager,
 
+    private val vlcManager: VlcPlayerManager,
+
     private val repository: PlayerRepository
 
 ) : ViewModel() {
 
-    init{
 
-        manager.onProgress = {
+    // =========================================================
+    // PLAYER ENGINE
+    // =========================================================
+
+    private val _playerEngine =
+        MutableStateFlow(PlayerEngine.EXO)
+
+    val playerEngine =
+        _playerEngine.asStateFlow()
+
+    private fun fallbackToVlc() {
+
+        val exoState = manager.playerState.value
+
+        val playlist = exoState.playlist
+
+        val index = exoState.currentIndex
+
+        if (playlist.isEmpty()) return
+
+        val updatedPlaylist =
+            playlist.toMutableList()
+
+        updatedPlaylist[index] =
+            updatedPlaylist[index].copy(
+                resume = exoState.currentPosition
+            )
+
+        _playerEngine.value = PlayerEngine.VLC
+
+        vlcManager.loadPlaylist(
+            updatedPlaylist,
+            index
+        )
+
+        vlcManager.play()
+    }
+    fun setPlayerEngine(engine: PlayerEngine) {
+
+        _playerEngine.value = engine
+
+        Log.d(
+            "Anidex_PlayerVM",
+            "Player engine changed to $engine"
+        )
+    }
+
+
+    fun togglePlayerEngine() {
+
+        _playerEngine.value =
+            when (_playerEngine.value) {
+
+                PlayerEngine.EXO ->
+                    PlayerEngine.VLC
+
+                PlayerEngine.VLC ->
+                    PlayerEngine.EXO
+            }
+    }
+
+
+    private fun activeState() =
+        when (_playerEngine.value) {
+
+            PlayerEngine.EXO ->
+                manager.playerState
+
+            PlayerEngine.VLC ->
+                vlcManager.playerState
+        }
+
+
+    val state: StateFlow<PlayerState> =
+        combine(
+            manager.playerState,
+            vlcManager.playerState,
+            _playerEngine
+        ) { exoState, vlcState, engine ->
+
+            when (engine) {
+                PlayerEngine.EXO -> exoState
+                PlayerEngine.VLC -> vlcState
+            }
+
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = PlayerState()
+        )
+
+
+    init {
+        manager.onProgress = { playerState ->
 
             viewModelScope.launch {
 
-                repository.savePlayback(it)
+                repository.savePlayback(
+                    playerState
+                )
             }
         }
+
 
         manager.onPlaybackEnded = {
 
             viewModelScope.launch {
 
-                repository.savePlayback(state.value)
+                repository.savePlayback(
+                    manager.playerState.value
+                )
 
                 playNextEpisode()
             }
         }
 
 
+        vlcManager.onProgress = { playerState ->
+
+            viewModelScope.launch {
+
+                repository.savePlayback(
+                    playerState
+                )
+            }
+        }
+
+        vlcManager.onPlaybackEnded = {
+
+            viewModelScope.launch {
+
+                repository.savePlayback(
+                    vlcManager.playerState.value
+                )
+
+                playNextEpisode()
+            }
+        }
+
+
+        manager.onError = { playerState ->
+
+            val media = playerState.media
+
+            if (media != null) {
+
+                fallbackToVlc()
+            }
+        }
     }
 
-    private val _isFullscreen = MutableStateFlow(false)
-    val isFullscreen = _isFullscreen.asStateFlow()
+
+
+    private val _isFullscreen =
+        MutableStateFlow(false)
+
+    val isFullscreen =
+        _isFullscreen.asStateFlow()
+
 
     fun toggleFullscreen() {
-        _isFullscreen.value = !_isFullscreen.value
+
+        _isFullscreen.value =
+            !_isFullscreen.value
     }
 
-    fun setFullscreen(value: Boolean) {
-        _isFullscreen.value = value
+
+    fun setFullscreen(
+        value: Boolean
+    ) {
+
+        _isFullscreen.value =
+            value
     }
 
-    val state = manager.playerState
+
+
 
     private val _infoState =
-        MutableStateFlow(PlayerInfoState())
+        MutableStateFlow(
+            PlayerInfoState()
+        )
 
     val infoState =
         _infoState.asStateFlow()
 
 
-    fun startSeries(seriesId: Long) {
+
+    fun startSeries(
+        seriesId: Long
+    ) {
 
         viewModelScope.launch {
 
@@ -78,30 +239,58 @@ class PlayerViewModel(
                 .getSeriesPlayback(seriesId)
                 ?.let { playback ->
 
-                    manager.loadPlaylist(
+                    when (_playerEngine.value) {
 
-                        playback.playlist,
+                        PlayerEngine.EXO -> {
 
-                        playback.startIndex
-                    )
+                            manager.loadPlaylist(
+                                playback.playlist,
+                                playback.startIndex
+                            )
 
-                    // Load series metadata
-                    repository.loadSeriesInfo(seriesId).let { info ->
-                        _infoState.value =
-                            PlayerInfoState(series = info)
+                            manager.play()
+                        }
+
+
+                        PlayerEngine.VLC -> {
+
+                            vlcManager.loadPlaylist(
+                                playback.playlist,
+                                playback.startIndex
+                            )
+
+                            vlcManager.play()
+                        }
                     }
+
+
+                    repository
+                        .loadSeriesInfo(seriesId)
+                        .let { info ->
+
+                            _infoState.value =
+                                PlayerInfoState(
+                                    series = info
+                                )
+                        }
+
 
                     Log.d(
                         "Anidex_PlayerVM",
-                        "infoState title = ${_infoState.value.series?.metadata?.title}"
+                        "infoState title = " +
+                                _infoState.value
+                                    .series
+                                    ?.metadata
+                                    ?.title
                     )
-
-                    manager.play()
                 }
         }
     }
 
-    private fun loadMetadata(media: PlayerMedia) {
+
+    private fun loadMetadata(
+        media: PlayerMedia
+    ) {
 
         viewModelScope.launch {
 
@@ -110,34 +299,44 @@ class PlayerViewModel(
                     loading = true
                 )
 
+
             runCatching {
 
-                when(media.type){
+                when (media.type) {
 
                     MediaType.MOVIE ->
-                        repository.loadMovieInfo(media.id)
+                        repository
+                            .loadMovieInfo(
+                                media.id
+                            )
 
                     MediaType.EPISODE ->
-                        repository.loadSeriesInfo(media.id)
+                        repository
+                            .loadSeriesInfo(
+                                media.id
+                            )
                 }
 
             }.onSuccess {
 
-                when(it){
+                when (it) {
 
-                    is MovieInfoUiModel ->
+                    is MovieInfoUiModel -> {
 
                         _infoState.value =
                             PlayerInfoState(
                                 movie = it
                             )
+                    }
 
-                    is SeriesInfoUiModel ->
+
+                    is SeriesInfoUiModel -> {
 
                         _infoState.value =
                             PlayerInfoState(
                                 series = it
                             )
+                    }
                 }
 
             }.onFailure {
@@ -147,126 +346,391 @@ class PlayerViewModel(
                         error = it.message
                     )
             }
-
         }
-
     }
 
 
-    fun playEpisode(index: Int) {
 
-        val playlist = state.value.playlist
+    fun playEpisode(
+        index: Int
+    ) {
 
-        if(index !in playlist.indices)
+        val playlist =
+            state.value.playlist
+
+
+        if (
+            index !in playlist.indices
+        ) {
             return
-
-        viewModelScope.launch{
-
-            repository.savePlayback(state.value)
-
-            manager.loadPlaylist(playlist,index)
-
-            manager.play()
         }
 
+
+        viewModelScope.launch {
+
+            repository.savePlayback(
+                state.value
+            )
+
+
+            when (_playerEngine.value) {
+
+                PlayerEngine.EXO -> {
+
+                    manager.loadPlaylist(
+                        playlist,
+                        index
+                    )
+
+                    manager.play()
+                }
+
+
+                PlayerEngine.VLC -> {
+
+                    vlcManager.loadPlaylist(
+                        playlist,
+                        index
+                    )
+
+                    vlcManager.play()
+                }
+            }
+        }
     }
-    fun startMovie(movieId: Long) {
+
+
+
+
+    fun startMovie(
+        movieId: Long
+    ) {
 
         viewModelScope.launch {
 
             repository
                 .getMovie(movieId)
-                ?.let {
+                ?.let { media ->
 
-                    manager.loadMedia(it)
 
-                    loadMetadata(it)
+                    when (_playerEngine.value) {
 
-                    manager.play()
+                        PlayerEngine.EXO -> {
+
+                            manager.loadMedia(
+                                media
+                            )
+
+                            manager.play()
+                        }
+
+
+                        PlayerEngine.VLC -> {
+
+                            vlcManager.loadMedia(
+                                media
+                            )
+
+                            vlcManager.play()
+                        }
+                    }
+
+
+                    loadMetadata(
+                        media
+                    )
                 }
         }
     }
-    val audioTracks = manager.audioTracks
-    val subtitleTracks = manager.subtitleTracks
+
+
+
+    val audioTracks: StateFlow<List<AudioTrack>> =
+        combine(
+            manager.audioTracks,
+            vlcManager.audioTracks,
+            _playerEngine
+        ) { exoTracks, vlcTracks, engine ->
+
+            when (engine) {
+                PlayerEngine.EXO -> exoTracks
+                PlayerEngine.VLC -> vlcTracks
+            }
+
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = emptyList()
+        )
+
+
+    val subtitleTracks: StateFlow<List<SubtitleTrack>> =
+        combine(
+            manager.subtitleTracks,
+            vlcManager.subtitleTracks,
+            _playerEngine
+        ) { exoTracks, vlcTracks, engine ->
+
+            when (engine) {
+                PlayerEngine.EXO -> exoTracks
+                PlayerEngine.VLC -> vlcTracks
+            }
+
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = emptyList()
+        )
 
 
     fun disableSubtitles() {
-        manager.disableSubtitles()
+
+        when (_playerEngine.value) {
+
+            PlayerEngine.EXO -> {
+                manager.disableSubtitles()
+            }
+
+            PlayerEngine.VLC -> {
+                vlcManager.disableSubtitles()
+            }
+        }
     }
 
 
     fun playNextEpisode() {
 
-        val nextIndex = state.value.currentIndex + 1
+        val nextIndex =
+            state.value.currentIndex + 1
 
-        if (nextIndex >= state.value.playlist.size)
+
+        if (
+            nextIndex >=
+            state.value.playlist.size
+        ) {
             return
+        }
 
-        playEpisode(nextIndex)
+
+        playEpisode(
+            nextIndex
+        )
     }
-
 
 
     fun playPreviousEpisode() {
 
-        val previousIndex = state.value.currentIndex - 1
+        val previousIndex =
+            state.value.currentIndex - 1
 
-        if (previousIndex < 0)
+
+        if (
+            previousIndex < 0
+        ) {
             return
+        }
 
-        playEpisode(previousIndex)
+
+        playEpisode(
+            previousIndex
+        )
     }
 
-    fun play() = manager.play()
 
-    fun pause() = manager.pause()
 
-    fun seek(position:Long)=
-        manager.seekTo(position)
+    fun play() {
 
-    fun seekToProgress(progress: Float) {
-        val duration = state.value.duration
+        when (_playerEngine.value) {
 
-        if (duration <= 0L) return
+            PlayerEngine.EXO ->
+                manager.play()
 
-        val position = (duration * progress)
-            .toLong()
-            .coerceIn(0L, duration)
-
-        manager.seekTo(position)
+            PlayerEngine.VLC ->
+                vlcManager.play()
+        }
     }
 
-    fun forward10()=
-        manager.seekForward()
 
-    fun rewind10()=
-        manager.seekBackward()
+    fun pause() {
 
-    fun selectAudio(track: AudioTrack) {
+        when (_playerEngine.value) {
 
-        manager.selectAudioTrack(track)
+            PlayerEngine.EXO ->
+                manager.pause()
+
+            PlayerEngine.VLC ->
+                vlcManager.pause()
+        }
     }
 
-    fun selectSubtitle(track: SubtitleTrack) {
 
-        manager.selectSubtitleTrack(track)
+    fun togglePlayPause() {
+
+        when (_playerEngine.value) {
+
+            PlayerEngine.EXO ->
+                manager.togglePlayPause()
+
+            PlayerEngine.VLC ->
+                vlcManager.togglePlayPause()
+        }
     }
+
+
+    fun seek(
+        position: Long
+    ) {
+
+        when (_playerEngine.value) {
+
+            PlayerEngine.EXO ->
+                manager.seekTo(
+                    position
+                )
+
+            PlayerEngine.VLC ->
+                vlcManager.seekTo(
+                    position
+                )
+        }
+    }
+
+
+    fun seekToProgress(
+        progress: Float
+    ) {
+
+        val duration =
+            state.value.duration
+
+
+        if (
+            duration <= 0L
+        ) {
+            return
+        }
+
+
+        val position =
+            (
+                    duration *
+                            progress
+                    )
+                .toLong()
+                .coerceIn(
+                    0L,
+                    duration
+                )
+
+
+        seek(
+            position
+        )
+    }
+
+
+    fun forward10() {
+
+        when (_playerEngine.value) {
+
+            PlayerEngine.EXO ->
+                manager.seekForward()
+
+            PlayerEngine.VLC ->
+                vlcManager.seekForward()
+        }
+    }
+
+
+    fun rewind10() {
+
+        when (_playerEngine.value) {
+
+            PlayerEngine.EXO ->
+                manager.seekBackward()
+
+            PlayerEngine.VLC ->
+                vlcManager.seekBackward()
+        }
+    }
+
+
+
+
+    fun selectAudio(
+        track: AudioTrack
+    ) {
+
+        when (_playerEngine.value) {
+
+            PlayerEngine.EXO -> {
+
+                manager.selectAudioTrack(
+                    track
+                )
+            }
+
+            PlayerEngine.VLC -> {
+
+                vlcManager.selectAudioTrack(
+                    track
+                )
+            }
+        }
+    }
+
+
+
+    fun selectSubtitle(
+        track: SubtitleTrack
+    ) {
+
+        when (_playerEngine.value) {
+
+            PlayerEngine.EXO -> {
+
+                manager.selectSubtitleTrack(
+                    track
+                )
+            }
+
+            PlayerEngine.VLC -> {
+
+                vlcManager.selectSubtitleTrack(
+                    track
+                )
+            }
+        }
+    }
+
+
 
     private val _trackSheet =
-        MutableStateFlow(TrackSheetType.NONE)
+        MutableStateFlow(
+            TrackSheetType.NONE
+        )
 
-    val trackSheet = _trackSheet.asStateFlow()
+    val trackSheet =
+        _trackSheet.asStateFlow()
+
 
     fun showSubtitleSheet() {
-        _trackSheet.value = TrackSheetType.SUBTITLE
+
+        _trackSheet.value =
+            TrackSheetType.SUBTITLE
     }
+
 
     fun showAudioSheet() {
-        _trackSheet.value = TrackSheetType.AUDIO
+
+        _trackSheet.value =
+            TrackSheetType.AUDIO
     }
+
 
     fun hideSheet() {
-        _trackSheet.value = TrackSheetType.NONE
-    }
 
+        _trackSheet.value =
+            TrackSheetType.NONE
+    }
 }

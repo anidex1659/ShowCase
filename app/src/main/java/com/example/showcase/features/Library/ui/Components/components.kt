@@ -70,7 +70,8 @@ fun LibraryPanel(
         LazyColumn(
             modifier = Modifier
                 .fillMaxHeight(0.9f)
-                .fillMaxWidth().padding(5.dp)
+                .fillMaxWidth()
+                .padding(5.dp)
                 .background(
                     VMocha.Base, RoundedCornerShape(20.dp)
                 )
@@ -103,15 +104,17 @@ fun LibraryPanel(
             textAlign = TextAlign.Center,
             color = VMocha.Subtext1,
             fontWeight = FontWeight.Bold ,
-            modifier = Modifier.fillMaxWidth()
-                .padding(top=250.dp, bottom = 20.dp))
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 250.dp, bottom = 20.dp))
     else
        TypewriterText("No Library Found | Add Library",
            textAlign = TextAlign.Center,
            color = VMocha.Subtext1,
            fontWeight = FontWeight.Bold ,
-           modifier = Modifier.fillMaxWidth()
-               .padding(top=250.dp, bottom = 20.dp))
+           modifier = Modifier
+               .fillMaxWidth()
+               .padding(top = 250.dp, bottom = 20.dp))
 }
 
 @Composable
@@ -400,14 +403,28 @@ fun MovieCard(
                     modifier = Modifier.weight(1f),
                     text = movie.movie.title,
                     color = VMocha.Text,
+                    maxLines = 2,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
-
                 IconButton(
+
                     onClick = {
-                        // Identify Movie
+                        DialogManager.show(
+                            GlobalDialog.EditMovieArtwork(movie.movie.id)
+                        )
+
                     }
+                ) {
+
+                    Icon(
+                        Icons.Default.ImageSearch,
+                        null,
+                        tint = VMocha.Text
+                    )
+                }
+                IconButton(
+                    {}
                 ) {
 
                     Icon(

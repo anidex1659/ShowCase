@@ -31,7 +31,12 @@ class EditArtworkViewModel(
 
     private var editingMovie = false
 
-
+    private inline fun <T> whenMedia(
+        series: () -> T,
+        movie: () -> T
+    ): T {
+        return if (editingMovie) movie() else series()
+    }
     private val _uiState =
         MutableStateFlow(
             EditArtworkUiState()
@@ -45,39 +50,29 @@ class EditArtworkViewModel(
     // LOAD SERIES
     // ============================================================
 
-    fun loadSeriesArtwork(
-        seriesId: Long
-    ) {
-
-        currentSeriesId = seriesId
-        currentMovieId = null
+    fun loadSeriesArtwork(seriesId: Long) {
 
         editingMovie = false
+        currentSeriesId = seriesId
+        currentMovieId = null
 
         viewModelScope.launch {
 
             try {
 
                 val series =
-                    dao.getSeriesById(
-                        seriesId
-                    ) ?: return@launch
+                    dao.getSeriesById(seriesId)
+                        ?: return@launch
 
-
-                currentSeriesTmdbId =
-                    series.tmdbId
-
+                currentSeriesTmdbId = series.tmdbId
 
                 currentStorageLocation =
-                    StorageLocationManager
-                        .seriesStorageFolder(
-                            series.folderPath
-                        )
+                    StorageLocationManager.seriesStorageFolder(
+                        series.folderPath
+                    )
 
-
-                loadCurrentSeriesArtwork()
-
-                loadSeriesImages()
+                loadCurrentArtwork()
+                loadTmdbImages()
 
             } catch (e: Exception) {
 
@@ -92,44 +87,29 @@ class EditArtworkViewModel(
         }
     }
 
-
-    // ============================================================
-    // LOAD MOVIE
-    // ============================================================
-
-    fun loadMovieArtwork(
-        movieId: Long
-    ) {
-
-        currentMovieId = movieId
-        currentSeriesId = null
+    fun loadMovieArtwork(movieId: Long) {
 
         editingMovie = true
+        currentMovieId = movieId
+        currentSeriesId = null
 
         viewModelScope.launch {
 
             try {
 
                 val movie =
-                    dao.getMovieById(
-                        movieId
-                    ) ?: return@launch
+                    dao.getMovieById(movieId)
+                        ?: return@launch
 
-
-                currentMovieTmdbId =
-                    movie.tmdbId
-
+                currentMovieTmdbId = movie.tmdbId
 
                 currentStorageLocation =
-                    StorageLocationManager
-                        .seriesStorageFolder(
-                            movie.folderPath
-                        )
+                    StorageLocationManager.seriesStorageFolder(
+                        movie.folderPath
+                    )
 
-
-                loadCurrentMovieArtwork()
-
-                loadMovieImages()
+                loadCurrentArtwork()
+                loadTmdbImages()
 
             } catch (e: Exception) {
 
@@ -144,44 +124,32 @@ class EditArtworkViewModel(
         }
     }
 
-
     // ============================================================
     // CHANGE ARTWORK TYPE
     // ============================================================
-
-    fun selectArtworkType(
-        type: String
-    ) {
+    fun selectArtworkType(type: String) {
 
         _uiState.update {
 
             it.copy(
+
                 selectedType = type,
+
                 selectedArtworkUrl = null,
+
                 artworkResults = emptyList(),
+
                 saved = false
             )
         }
 
-
         viewModelScope.launch {
 
-            if (editingMovie) {
+            loadCurrentArtwork()
 
-                loadCurrentMovieArtwork()
-
-                loadMovieImages()
-
-            } else {
-
-                loadCurrentSeriesArtwork()
-
-                loadSeriesImages()
-
-            }
+            loadTmdbImages()
         }
     }
-
 
     // ============================================================
     // SELECT ARTWORK
@@ -201,191 +169,56 @@ class EditArtworkViewModel(
         }
     }
 
-
-//    fun saveSeriesArtwork() {
-//
-//        val seriesId =
-//            currentSeriesId
-//                ?: return
-//
-//        val imageUrl =
-//            _uiState.value.selectedArtworkUrl
-//                ?: return
-//
-//        val storageLocation =
-//            currentStorageLocation
-//                ?: return
-//
-//        viewModelScope.launch {
-//
-//            _uiState.update {
-//
-//                it.copy(
-//                    isSaving = true,
-//                    error = null
-//                )
-//            }
-//
-//            try {
-//
-//                val success =
-//                    artworkDownloader.replaceSeriesArtwork(
-//
-//                        seriesId =
-//                            seriesId,
-//
-//                        artworkType =
-//                            _uiState.value.selectedType,
-//
-//                        imageUrl =
-//                            imageUrl,
-//
-//                        storageLocation =
-//                            storageLocation
-//
-//                    )
-//
-//                if (success) {
-//
-//                    // Reload the newly saved local artwork
-//                    loadCurrentSeriesArtwork()
-//                }
-//
-//                _uiState.update {
-//
-//                    it.copy(
-//
-//                        isSaving =
-//                            false,
-//
-//                        saved =
-//                            success,
-//
-//                        selectedArtworkUrl =
-//                            null,
-//
-//                        error =
-//                            if (!success)
-//                                "Failed to save artwork"
-//                            else
-//                                null
-//
-//                    )
-//                }
-//
-//            } catch (e: Exception) {
-//
-//                _uiState.update {
-//
-//                    it.copy(
-//
-//                        isSaving =
-//                            false,
-//
-//                        saved =
-//                            false,
-//
-//                        error =
-//                            e.message
-//                                ?: "Failed to save artwork"
-//
-//                    )
-//                }
-//            }
-//        }
-//    }
-
-
     // ============================================================
     // LOAD CURRENT SERIES ARTWORK
     // ============================================================
+    private suspend fun loadCurrentArtwork() {
 
-    private suspend fun loadCurrentSeriesArtwork() {
+        val currentArtworkUri =
+            if (editingMovie) {
 
-        val seriesId =
-            currentSeriesId
-                ?: return
+                val movieId =
+                    currentMovieId ?: return
 
-
-        val artwork =
-            dao.getArtwork(
-
-                seriesId = seriesId,
-
-                type =
+                dao.getMovieArtwork(
+                    movieId,
                     _uiState.value.selectedType
+                )?.uri
 
-            )
+            } else {
 
+                val seriesId =
+                    currentSeriesId ?: return
+
+                dao.getArtwork(
+                    seriesId,
+                    _uiState.value.selectedType
+                )?.uri
+            }
 
         _uiState.update {
 
             it.copy(
-
-                currentArtworkUri =
-                    artwork?.uri,
-
-                selectedArtworkUrl =
-                    null,
-
-                saved =
-                    false
-
+                currentArtworkUri = currentArtworkUri,
+                selectedArtworkUrl = null,
+                saved = false
             )
         }
     }
-
-
-    // ============================================================
-    // LOAD CURRENT MOVIE ARTWORK
-    // ============================================================
-
-    private suspend fun loadCurrentMovieArtwork() {
-
-        val movieId =
-            currentMovieId
-                ?: return
-
-
-        val artwork =
-            dao.getMovieArtwork(
-
-                movieId = movieId,
-
-                type =
-                    _uiState.value.selectedType
-
-            )
-
-
-        _uiState.update {
-
-            it.copy(
-
-                currentArtworkUri =
-                    artwork?.uri,
-
-                selectedArtworkUrl =
-                    null,
-
-                saved =
-                    false
-
-            )
-        }
-    }
-
-
     // ============================================================
     // LOAD SERIES TMDB IMAGES
     // ============================================================
 
-    private suspend fun loadSeriesImages() {
+    private suspend fun loadTmdbImages() {
 
         val tmdbId =
-            currentSeriesTmdbId
-                ?: return
 
+            if (editingMovie)
+                currentMovieTmdbId
+            else
+                currentSeriesTmdbId
+
+        tmdbId ?: return
 
         _uiState.update {
 
@@ -395,20 +228,18 @@ class EditArtworkViewModel(
             )
         }
 
-
         try {
 
             val response =
-                remote.getSeriesImages(
-                    tmdbId
-                )
 
+                if (editingMovie)
+                    remote.getMovieImages(tmdbId)
+                else
+                    remote.getSeriesImages(tmdbId)
 
             val images =
 
-                when (
-                    _uiState.value.selectedType
-                ) {
+                when (_uiState.value.selectedType) {
 
                     "poster" ->
                         response.posters
@@ -423,12 +254,12 @@ class EditArtworkViewModel(
                         emptyList()
                 }
 
-
             val results =
-                images.mapNotNull { image ->
+
+                images.mapNotNull {
 
                     remote.buildImageUrl(
-                        image.filePath
+                        it.filePath
                     )?.let { url ->
 
                         ArtworkItem(
@@ -437,28 +268,21 @@ class EditArtworkViewModel(
 
                             type =
                                 _uiState.value.selectedType
-
                         )
                     }
                 }
-
 
             _uiState.update {
 
                 it.copy(
 
-                    artworkResults =
-                        results,
+                    artworkResults = results,
 
-                    isLoading =
-                        false,
+                    isLoading = false,
 
-                    error =
-                        null
-
+                    error = null
                 )
             }
-
 
         } catch (e: Exception) {
 
@@ -466,338 +290,108 @@ class EditArtworkViewModel(
 
                 it.copy(
 
-                    isLoading =
-                        false,
+                    isLoading = false,
 
-                    error =
-                        e.message
-
+                    error = e.message
                 )
             }
         }
     }
-
-
-    // ============================================================
-    // LOAD MOVIE TMDB IMAGES
-    // ============================================================
-
-    private suspend fun loadMovieImages() {
-
-        val tmdbId =
-            currentMovieTmdbId
-                ?: return
-
-
-        _uiState.update {
-
-            it.copy(
-                isLoading = true,
-                error = null
-            )
-        }
-
-
-        try {
-
-            val response =
-                remote.getMovieImages(
-                    tmdbId
-                )
-
-
-            val images =
-
-                when (
-                    _uiState.value.selectedType
-                ) {
-
-                    "poster" ->
-                        response.posters
-
-                    "backdrop" ->
-                        response.backdrops
-
-                    "logo" ->
-                        response.logos
-
-                    else ->
-                        emptyList()
-                }
-
-
-            val results =
-                images.mapNotNull { image ->
-
-                    remote.buildImageUrl(
-                        image.filePath
-                    )?.let { url ->
-
-                        ArtworkItem(
-
-                            url = url,
-
-                            type =
-                                _uiState.value.selectedType
-
-                        )
-                    }
-                }
-
-
-            _uiState.update {
-
-                it.copy(
-
-                    artworkResults =
-                        results,
-
-                    isLoading =
-                        false,
-
-                    error =
-                        null
-
-                )
-            }
-
-
-        } catch (e: Exception) {
-
-            _uiState.update {
-
-                it.copy(
-
-                    isLoading =
-                        false,
-
-                    error =
-                        e.message
-
-                )
-            }
-        }
-    }
-
 
     // ============================================================
     // SAVE SERIES ARTWORK
     // ============================================================
 
-    fun saveSeriesArtwork() {
-
-        val seriesId =
-            currentSeriesId
-                ?: return
-
-
-        val imageUrl =
-            _uiState.value.selectedArtworkUrl
-                ?: return
-
-
-        val storageLocation =
-            currentStorageLocation
-                ?: return
-
-
-        viewModelScope.launch {
-
-            _uiState.update {
-
-                it.copy(
-                    isSaving = true,
-                    error = null
-                )
-            }
-
-
-            try {
-
-                val success =
-                    artworkDownloader
-                        .replaceSeriesArtwork(
-
-                            seriesId =
-                                seriesId,
-
-                            artworkType =
-                                _uiState.value.selectedType,
-
-                            imageUrl =
-                                imageUrl,
-
-                            storageLocation =
-                                storageLocation
-
-                        )
-
-
-                if (success) {
-
-                    loadCurrentSeriesArtwork()
-
-                }
-
-
-                _uiState.update {
-
-                    it.copy(
-
-                        isSaving =
-                            false,
-
-                        saved =
-                            success,
-
-                        selectedArtworkUrl =
-                            null,
-
-                        error =
-                            if (!success)
-                                "Failed to save artwork"
-                            else
-                                null
-
-                    )
-                }
-
-
-            } catch (e: Exception) {
-
-                _uiState.update {
-
-                    it.copy(
-
-                        isSaving =
-                            false,
-
-                        error =
-                            e.message
-
-                    )
-                }
-            }
-        }
-    }
-
-
-    // ============================================================
-    // SAVE MOVIE ARTWORK
-    // ============================================================
-
-    fun saveMovieArtwork() {
-
-        val movieId =
-            currentMovieId
-                ?: return
-
-
-        val imageUrl =
-            _uiState.value.selectedArtworkUrl
-                ?: return
-
-
-        val storageLocation =
-            currentStorageLocation
-                ?: return
-
-
-        viewModelScope.launch {
-
-            _uiState.update {
-
-                it.copy(
-                    isSaving = true,
-                    error = null
-                )
-            }
-
-
-            try {
-
-                val success =
-                    artworkDownloader
-                        .replaceMovieArtwork(
-
-                            movieId =
-                                movieId,
-
-                            artworkType =
-                                _uiState.value.selectedType,
-
-                            imageUrl =
-                                imageUrl,
-
-                            storageLocation =
-                                storageLocation
-
-                        )
-
-
-                if (success) {
-
-                    loadCurrentMovieArtwork()
-
-                }
-
-
-                _uiState.update {
-
-                    it.copy(
-
-                        isSaving =
-                            false,
-
-                        saved =
-                            success,
-
-                        selectedArtworkUrl =
-                            null,
-
-                        error =
-                            if (!success)
-                                "Failed to save artwork"
-                            else
-                                null
-
-                    )
-                }
-
-
-            } catch (e: Exception) {
-
-                _uiState.update {
-
-                    it.copy(
-
-                        isSaving =
-                            false,
-
-                        error =
-                            e.message
-
-                    )
-                }
-            }
-        }
-    }
-
-
-    // ============================================================
-    // SAVE CURRENT ARTWORK
-    // ============================================================
-
     fun saveArtwork() {
 
-        if (editingMovie) {
+        val imageUrl =
+            _uiState.value.selectedArtworkUrl
+                ?: return
 
-            saveMovieArtwork()
+        val storage =
+            currentStorageLocation
+                ?: return
 
-        } else {
+        viewModelScope.launch {
 
-            saveSeriesArtwork()
+            _uiState.update {
 
+                it.copy(
+                    isSaving = true,
+                    error = null
+                )
+            }
+
+            try {
+
+                val success =
+
+                    if (editingMovie) {
+
+                        artworkDownloader.replaceMovieArtwork(
+
+                            movieId =
+                                currentMovieId ?: return@launch,
+
+                            artworkType =
+                                _uiState.value.selectedType,
+
+                            imageUrl = imageUrl,
+
+                            storageLocation = storage
+                        )
+
+                    } else {
+
+                        artworkDownloader.replaceSeriesArtwork(
+
+                            seriesId =
+                                currentSeriesId ?: return@launch,
+
+                            artworkType =
+                                _uiState.value.selectedType,
+
+                            imageUrl = imageUrl,
+
+                            storageLocation = storage
+                        )
+                    }
+
+                if (success) {
+
+                    loadCurrentArtwork()
+                }
+
+                _uiState.update {
+
+                    it.copy(
+
+                        isSaving = false,
+
+                        saved = success,
+
+                        selectedArtworkUrl = null,
+
+                        error =
+                            if (success)
+                                null
+                            else
+                                "Failed to save artwork"
+                    )
+                }
+
+            } catch (e: Exception) {
+
+                _uiState.update {
+
+                    it.copy(
+
+                        isSaving = false,
+
+                        error = e.message
+                    )
+                }
+            }
         }
     }
 }

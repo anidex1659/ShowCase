@@ -61,7 +61,8 @@ import com.example.showcase.ui.theme.VMocha
 //@Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun EditArtworkDialog(
-	seriesId: Long,
+	seriesId: Long? = null,
+	movieId: Long? = null,
 	onDismiss: () -> Unit
 ) {
 
@@ -99,8 +100,18 @@ fun EditArtworkDialog(
 		mutableStateOf(0)
 	}
 
-	LaunchedEffect(seriesId) {
-		viewModel.loadSeriesArtwork(seriesId)
+	LaunchedEffect(seriesId, movieId) {
+
+		when {
+
+			seriesId != null -> {
+				viewModel.loadSeriesArtwork(seriesId)
+			}
+
+			movieId != null -> {
+				viewModel.loadMovieArtwork(movieId)
+			}
+		}
 	}
 
 	Dialog(

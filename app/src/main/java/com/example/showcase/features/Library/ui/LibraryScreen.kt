@@ -1,5 +1,6 @@
 package com.example.showcase.features.Library.ui
 
+import android.app.Activity
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -14,7 +15,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,9 +33,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import com.example.showcase.core.progresmanager.ProgressManager
 import com.example.showcase.core.progresmanager.ScanProgress
 import com.example.showcase.features.Library.repository.LibraryRepository
@@ -63,13 +67,14 @@ import com.example.showcase.features.Player.model.storage.ArtworkStorageManager
 import com.example.showcase.features.Player.model.storage.MetadataJsonManager
 import com.example.showcase.features.Player.model.storage.MovieMetadataJsonManager
 import com.example.showcase.features.SplashScreen.LoadingPopup
+import com.example.showcase.ui.navigation.HomeRoute
 import com.example.showcase.ui.popup.GlobalDialogHost
 import com.example.showcase.ui.theme.VMocha
 
 
-@Preview(showSystemUi = true, showBackground = true)
+//@Preview(showSystemUi = true, showBackground = true)
 @Composable
-fun LibraryScreen() {
+fun LibraryScreen(navController: NavHostController) {
 
     GlobalDialogHost()
 
@@ -164,8 +169,9 @@ fun LibraryScreen() {
     val seriesRepository =
 
         SeriesRepository(
-            dao
-        )
+			dao,
+			metadataStorageRepository
+		)
 
     val movieRepository =
 
@@ -226,6 +232,28 @@ fun LibraryScreen() {
         mutableStateOf(false)
     }
 
+    // Hide system status bar and navigation bar when entering full screen
+    DisposableEffect(Unit) {
+        val window = (context as? Activity)?.window
+        if (window != null) {
+            val insetsController = WindowCompat.getInsetsController(window, window.decorView)
+
+            // 1. Hide both status bar & navigation bar
+            insetsController.hide(WindowInsetsCompat.Type.navigationBars())
+
+            // 2. Allow swiping edges to temporarily show controls without pushing layout
+            insetsController.systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
+
+        onDispose {
+            window?.let {
+                val insetsController = WindowCompat.getInsetsController(it, it.decorView)
+                insetsController.show(WindowInsetsCompat.Type.systemBars())
+            }
+        }
+    }
+
 
     LoadingPopup(progress.visible,progress.title)
 
@@ -268,6 +296,7 @@ fun LibraryScreen() {
                 viewModel.scanAllLibraries(context)
             }
             ,progress
+            ,navController
 
         )
     }
@@ -281,7 +310,10 @@ fun LibraryScreen() {
 
 @Composable
 fun MenuBar(
-    onAddClick: () -> Unit, onScanClick: () -> Unit, progress: ScanProgress,
+    onAddClick: () -> Unit,
+    onScanClick: () -> Unit,
+    progress: ScanProgress,
+    navController: NavHostController,
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "")
 
@@ -328,48 +360,12 @@ fun MenuBar(
     ) {
 
         IconButton(
-            onClick = {}) {
+            onClick = {navController.navigate(HomeRoute)}) {
 
             Icon(
                 imageVector = Icons.Default.ArrowBack, contentDescription = null, tint = VMocha.Text
             )
         }
-
-        Column(  modifier = Modifier
-            .padding(top=10.dp, bottom = 10.dp)
-            .fillMaxWidth(0.7f))
-        {
-//            Text(
-//
-//            if (!progress.visible)
-//                ""
-//            else
-//                "${progress.title}",
-//
-//            textAlign = TextAlign.Start,
-//            color = VMocha.Subtext1,
-//            fontSize = 20.sp,
-//            maxLines = 1,
-//            overflow = TextOverflow.Ellipsis
-//
-//        )
-//
-//            Text(
-//
-//                if (!progress.visible)
-//                    ""
-//                else
-//                    "<${progress.subtitle}>",
-//
-//                textAlign = TextAlign.Start,
-//                color = VMocha.Subtext0,
-//                fontSize = 15.sp,
-//                maxLines = 1,
-//                overflow = TextOverflow.Ellipsis
-//            )
-            }
-
-
 
         Row {
 

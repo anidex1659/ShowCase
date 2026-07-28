@@ -106,6 +106,8 @@ dependencies {
     implementation("androidx.media3:media3-session:1.8.0")
 
     implementation("androidx.documentfile:documentfile:1.0.1")
+    //vlc
+    implementation("org.videolan.android:libvlc-all:3.6.5")
 
     //database
     implementation("androidx.room:room-runtime:2.8.0")

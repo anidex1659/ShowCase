@@ -6,6 +6,9 @@ sealed class GlobalDialog {
         val seriesId: Long
     ) : GlobalDialog()
 
+    data class EditMovieArtwork(
+        val movieId: Long
+    ) : GlobalDialog()
     data class EditSeriesMetadata(
         val seriesId: Long
     ) : GlobalDialog()

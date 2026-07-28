@@ -4,14 +4,16 @@ import com.example.showcase.features.MetaData.data.database.dao.ShowcaseDao
 import com.example.showcase.features.MetaData.data.database.entity.series.SeriesEntity
 import com.example.showcase.features.MetaData.data.model.EpisodeUiModel
 import com.example.showcase.features.MetaData.data.model.SeasonUiModel
+import com.example.showcase.features.MetaData.data.model.SeriesMetadata
 import com.example.showcase.features.MetaData.data.model.SeriesUiModel
+import com.example.showcase.features.MetaData.data.repository.metadata.MetadataStorageRepository
 
 class SeriesRepository(
 
-    val dao: ShowcaseDao
+    val dao: ShowcaseDao,
+    val metadataStorageRepository: MetadataStorageRepository
 
 ) {
-
     suspend fun getSeries(): List<SeriesUiModel> {
 
         return dao
@@ -50,7 +52,7 @@ class SeriesRepository(
         return dao
             .getSeriesForLibrary(libraryId)
             .map {
-                buildSeriesUiModel(it)
+                buildSeriesUiModel(it,)
             }
     }
 
@@ -66,8 +68,9 @@ class SeriesRepository(
     }
 
     private suspend fun buildSeriesUiModel(
-        series: SeriesEntity
-    ): SeriesUiModel {
+        series: SeriesEntity,
+
+        ): SeriesUiModel {
 
         val episodes =
             dao.getEpisodesForSeries(series.id)
@@ -83,6 +86,12 @@ class SeriesRepository(
 
         val backdrop =
             artwork.firstOrNull { it.type == "backdrop" }
+
+        val metadata =
+            metadataStorageRepository.loadMetadata(
+                series.id,
+                SeriesMetadata.serializer()
+            )
 
         val episodeUiModels = episodes.map { episode ->
 
@@ -103,11 +112,38 @@ class SeriesRepository(
                         0f
                 } ?: 0f
 
+            val seasonMetadata =
+                metadata
+                    ?.seasons
+                    ?.firstOrNull {
+
+                        it.seasonNumber ==
+                                episode.seasonNumber
+
+                    }
+
+            // Find matching episode
+            val episodeMetadata =
+                seasonMetadata
+                    ?.episodes
+                    ?.firstOrNull {
+
+                        it.episodeNumber ==
+                                episode.episodeNumber
+
+                    }
+
+
+
             EpisodeUiModel(
 
                 episode = episode,
 
                 playback = playback,
+
+                plot =
+                    episodeMetadata?.plot
+                        ?: "",
 
                 watched = watched,
 

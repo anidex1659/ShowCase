@@ -1,4 +1,4 @@
-package com.example.showcase.features.Player.repository
+package com.example.showcase.features.Player.PlayerCore.repository
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -11,8 +11,9 @@ class PlayerViewModelFactory : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
 
         return PlayerViewModel(
-            PlayerGraph.playerManager,
-            PlayerGraph.repository
-        ) as T
+            PlayerGraph.playerManager, PlayerGraph.vlcPlayerManager,
+            PlayerGraph.repository,
+
+            ) as T
     }
 }

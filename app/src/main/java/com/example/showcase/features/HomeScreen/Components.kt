@@ -421,9 +421,7 @@ fun BootomBAR(
             }
 
             IconButton(
-                onClick = {
-
-                }
+                onClick = {}
             ) {
 
                 Icon(

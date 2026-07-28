@@ -1,5 +1,6 @@
 package com.example.showcase.features.InfoPage
 
+import android.app.Activity
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
@@ -31,6 +32,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -47,6 +49,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
@@ -66,7 +71,7 @@ import com.example.showcase.features.MetaData.data.repository.metadata.sires.Ser
 import com.example.showcase.features.Player.model.storage.MetadataJsonManager
 import com.example.showcase.features.Player.model.storage.MovieMetadataJsonManager
 import com.example.showcase.features.Player.PlayerViewModel.PlayerViewModel
-import com.example.showcase.features.Player.repository.PlayerRepository
+import com.example.showcase.features.Player.PlayerCore.repository.PlayerRepository
 import com.example.showcase.features.SplashScreen.SplashScreenImg
 import com.example.showcase.ui.navigation.PlayerGraph
 import com.example.showcase.ui.navigation.PlayerRoute
@@ -80,263 +85,248 @@ import kotlinx.coroutines.delay
 fun InfoPage(movieId: Long? = null, seriesId: Long? = null, navController: NavHostController) {
 
 
-    val context =
-        LocalContext.current
+	val context = LocalContext.current
 
-    val progress by ProgressManager
-        .progress
-        .collectAsState()
+	val progress by ProgressManager.progress.collectAsState()
 
-    val dao = DatabaseProvider
-        .getDatabase(context)
-        .dao()
+	val dao = DatabaseProvider.getDatabase(context).dao()
 
 
+	val jsonmanger = MetadataJsonManager(dao)
+	val movieMetadataJsonManager = MovieMetadataJsonManager(dao)
+
+	val MetadataRepository =
+		MetadataStorageRepository(context, jsonmanger, movieMetadataJsonManager)
+
+	val repository = remember {
+		InfoRepository(
+			dao = dao,
+			seriesRepository = SeriesRepository(dao, MetadataRepository),
+			movieRepository = MovieRepository(dao),
+			MetadataRepository
+		)
+	}
+
+	// Hide system status bar and navigation bar when entering full screen
+	DisposableEffect(Unit) {
+		val window = (context as? Activity)?.window
+		if (window != null) {
+			val insetsController = WindowCompat.getInsetsController(window, window.decorView)
+
+			// 1. Hide both status bar & navigation bar
+			insetsController.hide(WindowInsetsCompat.Type.navigationBars())
+
+			// 2. Allow swiping edges to temporarily show controls without pushing layout
+			insetsController.systemBarsBehavior =
+				WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+		}
+
+		onDispose {
+			window?.let {
+				val insetsController = WindowCompat.getInsetsController(it, it.decorView)
+				insetsController.show(WindowInsetsCompat.Type.systemBars())
+			}
+		}
+	}
+
+	PlayerGraph.initialize(
+		context = context, repository = PlayerRepository(
+			SeriesRepository(dao, MetadataRepository), MovieRepository(dao), dao, MetadataRepository
+		)
+	)
+	val playerViewModel = remember {
+
+		PlayerViewModel(
+			PlayerGraph.playerManager, PlayerGraph.vlcPlayerManager, PlayerGraph.repository
+		)
+	}
+
+	val viewModel: InfoViewModel = viewModel(
+		factory = InfoViewModelFactory(repository)
+	)
+	val uiState by viewModel.uiState.collectAsState()
+
+	LaunchedEffect(movieId, seriesId) {
+
+		when {
+
+			movieId != null -> viewModel.loadMovie(movieId)
+
+			seriesId != null -> viewModel.loadSeries(seriesId)
+		}
+	}
+
+	when {
+
+		uiState.loading -> {
+			SplashScreenImg()
+		}
+
+		uiState.movie != null -> {
+
+			Column(Modifier.fillMaxSize()) {
+				MovieInfoContent(
+					movie = uiState.movie!!, playerViewModel, navController, progress
+				)
+			}
+		}
+
+		uiState.series != null -> {
+			Column(Modifier.fillMaxSize()) {
+				SeriesInfoContent(
+					series = uiState.series!!, playerViewModel, navController, progress
+				)
 
 
-    val jsonmanger= MetadataJsonManager(dao)
-    val movieMetadataJsonManager = MovieMetadataJsonManager(dao)
-
-    val MetadataRepository = MetadataStorageRepository(context,jsonmanger,movieMetadataJsonManager)
-
-    val repository = remember {
-        InfoRepository(
-            dao = dao,
-            seriesRepository = SeriesRepository(dao),
-            movieRepository = MovieRepository(dao),
-            MetadataRepository
-        )
-    }
-
-    PlayerGraph.initialize(
-        context = context,
-        repository = PlayerRepository(
-            SeriesRepository(dao),
-            MovieRepository(dao),
-            dao,
-            MetadataRepository
-        )
-    )
-    val playerViewModel = remember {
-
-        PlayerViewModel(
-            PlayerGraph.playerManager,
-            PlayerGraph.repository
-        )
-    }
-
-    val viewModel: InfoViewModel = viewModel(
-        factory = InfoViewModelFactory(repository)
-    )
-    val uiState by viewModel.uiState.collectAsState()
-
-    LaunchedEffect(movieId, seriesId) {
-
-        when {
-
-            movieId != null ->
-                viewModel.loadMovie(movieId)
-
-            seriesId != null ->
-                viewModel.loadSeries(seriesId)
-        }
-    }
-
-    when {
-
-        uiState.loading -> {
-            SplashScreenImg()
-        }
-        uiState.movie != null -> {
-            Column (Modifier.fillMaxSize()) {
-                MovieInfoContent(
-                    movie = uiState.movie!!,
-                    playerViewModel,
-                    navController,
-                    progress
-                )
-                BootomBAR(navController, progress)
-            }
-        }
-
-        uiState.series != null -> {
-            Column (Modifier.fillMaxSize()) {
-                SeriesInfoContent(
-                    series = uiState.series!!,
-                    playerViewModel,
-                    navController,
-                    progress
-
-                )
-                BootomBAR(navController, progress)
-            }
-        }
-    }
-
-
+			}
+		}
+	}
 }
 
 //@Preview
 @Composable
 fun HeroCard(
-    rating: String,
+	rating: String,
 
-    poster: Any?,
+	poster: Any?,
 
-    logo: Any?,
-    onplay: () -> Unit
+	logo: Any?, onplay: () -> Unit
 ) {
-    var badgeVisible by remember {
-        mutableStateOf(false)
-    }
+	var badgeVisible by remember {
+		mutableStateOf(false)
+	}
 
-    var playVisible by remember {
-        mutableStateOf(false)
-    }
+	var playVisible by remember {
+		mutableStateOf(false)
+	}
 
-    LaunchedEffect(Unit) {
-        badgeVisible = true
+	LaunchedEffect(Unit) {
+		badgeVisible = true
 
-        delay(600)
+		delay(600)
 
-        playVisible = true
-    }
+		playVisible = true
+	}
 
-    val playScale by animateFloatAsState(
+	val playScale by animateFloatAsState(
 
-        targetValue =
-            if (playVisible) 1f else 0.5f,
+		targetValue = if (playVisible) 1f else 0.5f,
 
-        animationSpec = spring(
+		animationSpec = spring(
 
-            dampingRatio =
-                Spring.DampingRatioMediumBouncy,
+			dampingRatio = Spring.DampingRatioMediumBouncy,
 
-            stiffness =
-                Spring.StiffnessLow
-        ),
+			stiffness = Spring.StiffnessLow
+		),
 
-        label = ""
-    )
+		label = ""
+	)
 
-    val scale by rememberInfiniteTransition(label = "")
-        .animateFloat(
-            initialValue = 1f,
-            targetValue = 1.08f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(
-                    durationMillis = 1200,
-                    easing = FastOutSlowInEasing
-                ),
-                repeatMode = RepeatMode.Reverse
-            ),
-            label = ""
-        )
-    Column() {
+	val scale by rememberInfiniteTransition(label = "").animateFloat(
+			initialValue = 1f, targetValue = 1.08f, animationSpec = infiniteRepeatable(
+				animation = tween(
+					durationMillis = 1200, easing = FastOutSlowInEasing
+				), repeatMode = RepeatMode.Reverse
+			), label = ""
+		)
+	Column() {
 
-        Card(
-            shape = RoundedCornerShape(10, 10, 10, 0),
-            colors = CardDefaults.cardColors(
-                containerColor = Color.Transparent
-            ),
+		Card(
+			shape = RoundedCornerShape(10, 10, 10, 0), colors = CardDefaults.cardColors(
+				containerColor = Color.Transparent
+			),
 
-            //border = BorderStroke(width = 5.dp, color = VMocha.Blue),
-            modifier = Modifier
+			//border = BorderStroke(width = 5.dp, color = VMocha.Blue),
+			modifier = Modifier
                 .padding(20.dp, 10.dp, 20.dp, 0.dp)
                 .height(500.dp)
-        ) {
-            Box(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                Card(
-                    shape = RoundedCornerShape(10, 20, 10, 20),
-                    border = BorderStroke(width = 1.dp, color = VMocha.Lavender),
-                    modifier = Modifier
+		) {
+			Box(
+				modifier = Modifier.fillMaxSize()
+			) {
+				Card(
+					shape = RoundedCornerShape(10, 20, 10, 20),
+					border = BorderStroke(width = 1.dp, color = VMocha.Lavender),
+					modifier = Modifier
                         .padding(0.dp, 0.dp, 0.dp, 30.dp)
                         .fillMaxSize()
-                ) {
-                    AsyncImage(
-                        model = poster,//poster image tobe changed
-                        contentDescription = "home_screen_BackGround",
-                        modifier = Modifier
-                            .fillMaxSize(),
-                        contentScale = ContentScale.Crop
+				) {
+					AsyncImage(
+						model = poster,//poster image tobe changed
+						contentDescription = "home_screen_BackGround",
+						modifier = Modifier.fillMaxSize(),
+						contentScale = ContentScale.Crop
 
-                    )
-                }
+					)
+				}
 
 
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .height(40.dp)
-                            .width(80.dp)
-                            .background(
-                                VMocha.Mantle,
-                                RoundedCornerShape(0, 50, 0, 50)
-                            )
-                    ) {
-
-                        Text(
-                            rating,
-                            color = VMocha.Red,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(vertical = 5.dp)
+				Box(
+					modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .height(40.dp)
+                        .width(80.dp)
+                        .background(
+                            VMocha.Mantle, RoundedCornerShape(0, 50, 0, 50)
                         )
-                    }
+				) {
+
+					Text(
+						rating,
+						color = VMocha.Red,
+						fontWeight = FontWeight.Bold,
+						fontSize = 20.sp,
+						textAlign = TextAlign.Center,
+						modifier = Modifier
+                            .fillMaxSize()
+                            .padding(vertical = 5.dp)
+					)
+				}
 
 
-                Box(
-                    modifier = Modifier
+				Box(
+					modifier = Modifier
                         .align(Alignment.BottomStart)
                         .size(120.dp)
                         .background(
-                            VMocha.Mantle,
-                            RoundedCornerShape(100)
+                            VMocha.Mantle, RoundedCornerShape(100)
                         )
-                )
-                {
-                    IconButton(
-                        modifier = Modifier.fillMaxSize(),
-                        onClick = onplay
-                    ) {
+				) {
+					IconButton(
+						modifier = Modifier.fillMaxSize(), onClick = onplay
+					) {
 
-                        Icon(
-                            Icons.Default.PlayCircle,
-                            null,
-                            tint = VMocha.Text,
-                            modifier = Modifier
+						Icon(
+							Icons.Default.PlayCircle,
+							null,
+							tint = VMocha.Text,
+							modifier = Modifier
                                 .fillMaxSize()
                                 .padding(20.dp)
                                 .graphicsLayer(
-                                    scaleX = playScale * scale,
-                                    scaleY = playScale * scale
+                                    scaleX = playScale * scale, scaleY = playScale * scale
                                 )
-                        )
-                    }
-                }
+						)
+					}
+				}
 
-            }
+			}
 
 
-        }
+		}
 
-        AsyncImage(
-            model = logo,
-            contentDescription = "Series Logo",
-            alignment = Alignment.Center,
-            modifier = Modifier
+		AsyncImage(
+			model = logo,
+			contentDescription = "Series Logo",
+			alignment = Alignment.Center,
+			modifier = Modifier
                 .fillMaxWidth()
                 .height(60.dp)
                 .padding(horizontal = 10.dp),
-            contentScale = ContentScale.Fit
-        )
+			contentScale = ContentScale.Fit
+		)
 
-    }
+	}
 
 
 }
@@ -344,180 +334,156 @@ fun HeroCard(
 
 //@Preview
 @Composable
-private fun InfoPanel(  genres: List<String>, plot: String, year: Int, status: String)
-{
-    LazyColumn(
-        modifier = Modifier
-            .height(250.dp)
-            //.fillMaxHeight()
-            .background(VMocha.Mantle, RoundedCornerShape(10, 10, 10, 10))
-            .border(1.dp, VMocha.Lavender, RoundedCornerShape(10, 10, 10, 10))
-    ) {
-        item {
-            TypewriterText(
-                genres.joinToString(" • "), //PLUNGE IN GENRES //Add typing animestion
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = VMocha.Text,
-                modifier = Modifier.padding(12.dp, 12.dp, 12.dp)
-            )
-            Spacer(modifier = Modifier.padding(5.dp))
+private fun InfoPanel(
+	genres: List<String>,
+	plot: String,
+	year: Int,
+	status: String,
+	navController: NavHostController,
+	progress: ScanProgress
+) {
+	Column {
+		LazyColumn(
+			modifier = Modifier
+                .height(250.dp)
+                //.fillMaxHeight()
+				.background(VMocha.Mantle, RoundedCornerShape(10, 10, 10, 10))
+                .border(1.dp, VMocha.Lavender, RoundedCornerShape(10, 10, 10, 10))
+		) {
+			item {
+				TypewriterText(
+					genres.joinToString(" | "),
+					fontSize = 20.sp,
+					fontWeight = FontWeight.Bold,
+					color = VMocha.Text,
+					modifier = Modifier.padding(12.dp, 12.dp, 12.dp)
+				)
+				Spacer(modifier = Modifier.padding(5.dp))
 
-        }
-        item {
-            Text(
-               plot,
-                color = VMocha.Subtext1,
-                lineHeight = 24.sp,
-                fontSize = 16.sp,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp)
-            )
-            Spacer(modifier = Modifier.padding(5.dp))
-        }
-        item {
-            Text(
-                "<$year"+"|"+"$status>",
-                color = VMocha.Subtext0,
-                textAlign = TextAlign.End,
-                lineHeight = 24.sp,
-                fontSize = 16.sp,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp)
-            )
-        }
-    }
+			}
+			item {
+				Text(
+					plot,
+					color = VMocha.Subtext1,
+					lineHeight = 24.sp,
+					fontSize = 16.sp,
+					modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp)
+				)
+				Spacer(modifier = Modifier.padding(5.dp))
+			}
+			item {
+				Text(
+					"<$year" + "|" + "$status>",
+					color = VMocha.Subtext0,
+					textAlign = TextAlign.End,
+					lineHeight = 24.sp,
+					fontSize = 16.sp,
+					modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp)
+				)
+			}
+		}
+	}
 }
-
-
 
 
 @Composable
 fun SeriesInfoContent(
 
-    series: SeriesInfoUiModel,
-    playerViewModel: PlayerViewModel,
-    navController: NavHostController,
-    progress: ScanProgress
+	series: SeriesInfoUiModel,
+	playerViewModel: PlayerViewModel,
+	navController: NavHostController,
+	progress: ScanProgress
 ) {
-    Box(modifier = Modifier.fillMaxSize()) {
+	Box(modifier = Modifier.fillMaxSize()) {
 
-        Column(modifier = Modifier
-            .background(VMocha.Crust)
-            .fillMaxSize()) {
+		Column(
+			modifier = Modifier
+                .background(VMocha.Crust)
+                .fillMaxSize()
+		) {
 
-            Spacer(modifier = Modifier.padding(25.dp))
-            HeroCard(
+			Spacer(modifier = Modifier.padding(25.dp))
 
-                rating =
-                    series.metadata?.rating?.toString()
-                        ?: "--",
+			HeroCard(
+				rating = series.metadata?.rating?.toString() ?: "--",
+				poster = series.media.poster?.uri,
+				logo = series.media.logo?.uri, onplay = {
+					navController.navigate(
+						PlayerRoute(
+							series.media.series.id, type = PlayerType.SERIES
+						)
+					)
+				})
 
-                poster = series.media.poster?.uri,
+			Spacer(modifier = Modifier.padding(10.dp))
 
-                logo = series.media.logo?.uri,
-                onplay = {
-                    navController.navigate(PlayerRoute(series.media.series.id, type = PlayerType.SERIES))}
-            )
+			InfoPanel(
+				genres = series.metadata?.genres ?: emptyList(),
+				plot = series.metadata?.plot ?: "",
+				year = series.metadata?.year ?: 0,
+				status = series.metadata?.status ?: "", navController, progress
+			)
 
-            Spacer(modifier = Modifier.padding(10.dp))
 
-            Box(){
-            InfoPanel(
-
-                genres =
-                    series.metadata?.genres
-                        ?: emptyList(),
-
-                plot =
-                    series.metadata?.plot
-                        ?: "",
-
-                year =
-                    series.metadata?.year
-                        ?: 0,
-
-                status =
-                    series.metadata?.status
-                        ?: ""
-            )
-
-            }
-        }
-    }
+		}
+	}
 }
 
 @Composable
 fun MovieInfoContent(
 
-    movie: MovieInfoUiModel,
-    playerViewModel: PlayerViewModel,
-    navController: NavHostController,
-    progress: ScanProgress
+	movie: MovieInfoUiModel,
+	playerViewModel: PlayerViewModel,
+	navController: NavHostController,
+	progress: ScanProgress
 ) {
 
-    Column (modifier = Modifier
-        .background(VMocha.Crust)
-        .fillMaxSize()
+	Column(
+		modifier = Modifier
+            .background(VMocha.Crust)
+            .fillMaxSize()
+	) {
 
-    ){
-
-        TypewriterText(
-
-            movie.metadata?.tagline
-                ?: "",
-            modifier = Modifier
+		TypewriterText(
+			movie.metadata?.tagline ?: "",
+			modifier = Modifier
                 .padding(top = 40.dp)
                 .fillMaxWidth(),
-            textAlign = TextAlign.Center,
-            fontSize = 20.sp,
+			textAlign = TextAlign.Center,
+			fontSize = 20.sp,
+			color = VMocha.Text
+		)
 
-            color = VMocha.Text
-        )
+		HeroCard(
+			rating = movie.metadata?.rating?.toString() ?: "--",
+			poster = movie.movie.artwork.firstOrNull {
+				it.type == "poster"
+			}?.uri,
+			logo = movie.movie.artwork.firstOrNull {
+				it.type == "logo"
+			}?.uri,
+			{
+				navController.navigate(PlayerRoute(movie.movie.movie.id, type = PlayerType.MOVIE))
+			})
 
-        HeroCard(
-
-            rating =
-                movie.metadata?.rating?.toString()
-                    ?: "--",
-
-            poster =
-                movie.movie.artwork.firstOrNull {
-                    it.type == "poster"
-                }?.uri,
-
-            logo =
-                movie.movie.artwork.firstOrNull {
-                    it.type == "logo"
-                }?.uri,
-
-            {
-
-                navController.navigate(PlayerRoute(movie.movie.movie.id, type = PlayerType.MOVIE))}
-        )
-
-        Box() {
-            InfoPanel(
-
-                genres =
-                    movie.metadata?.genres
-                        ?: emptyList(),
-
-                plot =
-                    movie.metadata?.plot
-                        ?: "",
-
-                year =
-                    movie.metadata?.year
-                        ?: 0,
-
-                status =
-                    movie.metadata?.status
-                        ?: ""
-            )
-        }
-
-    }
+		Box() {
+			InfoPanel(
+				genres = movie.metadata?.genres ?: emptyList(),
+				plot = movie.metadata?.plot ?: "",
+				year = movie.metadata?.year ?: 0,
+				status = movie.metadata?.status ?: "",
+				navController = navController,
+				progress = progress
+			)
+			BootomBAR(
+				navController, progress, Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+			)
+		}
+	}
 }

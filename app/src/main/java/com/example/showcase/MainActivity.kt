@@ -1,6 +1,7 @@
 package com.example.showcase
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -18,7 +19,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             ShowCaseTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-
+                    Log.d("Anidex__Start",innerPadding.toString())
                     AppNavGraph()
 
                 }

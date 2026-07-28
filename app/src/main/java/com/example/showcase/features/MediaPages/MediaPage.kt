@@ -1,5 +1,6 @@
 package com.example.showcase.features.MediaPages
 
+import android.app.Activity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
@@ -14,7 +15,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -43,6 +43,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -56,28 +57,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
-import com.example.showcase.R
 import com.example.showcase.core.progresmanager.ProgressManager
-import com.example.showcase.features.HomeScreen.BootomBAR
 import com.example.showcase.features.HomeScreen.TopBar
 import com.example.showcase.features.HomeScreen.repo.HomeRepository
-import com.example.showcase.features.HomeScreen.viewmodel.HomeViewModel
-import com.example.showcase.features.HomeScreen.viewmodel.HomeViewModelFactory
 import com.example.showcase.features.InfoPage.repository.InfoRepository
-import com.example.showcase.features.InfoPage.uistate.MovieInfoUiModel
-import com.example.showcase.features.InfoPage.uistate.SeriesInfoUiModel
-import com.example.showcase.features.InfoPage.viewmodel.InfoViewModel
-import com.example.showcase.features.InfoPage.viewmodel.InfoViewModelFactory
 import com.example.showcase.features.Library.ui.Components.TypewriterText
 import com.example.showcase.features.MetaData.data.database.DatabaseProvider
 import com.example.showcase.features.MetaData.data.repository.metadata.MetadataStorageRepository
@@ -107,23 +102,23 @@ fun MediaPage(navController: NavHostController,Show : String) {
 
     val dao = DatabaseProvider.getDatabase(context).dao()
 
-    val seriesRepository = remember { SeriesRepository(dao) }
-    val movieRepository = remember { MovieRepository(dao) }
 
-    val repository = remember {
-        HomeRepository(seriesRepository, movieRepository)
-    }
 
     val jsonmanger= MetadataJsonManager(dao)
     val movieMetadataJsonManager = MovieMetadataJsonManager(dao)
 
     val MetadataRepository = MetadataStorageRepository(context,jsonmanger,movieMetadataJsonManager)
 
+    val seriesRepository = remember { SeriesRepository(dao, MetadataRepository) }
+    val movieRepository = remember { MovieRepository(dao) }
 
+    val repository = remember {
+        HomeRepository(seriesRepository, movieRepository)
+    }
     val Inforepository = remember {
         InfoRepository(
             dao = dao,
-            seriesRepository = SeriesRepository(dao),
+            seriesRepository = SeriesRepository(dao, MetadataRepository),
             movieRepository = MovieRepository(dao),
             MetadataRepository
         )
@@ -149,6 +144,29 @@ fun MediaPage(navController: NavHostController,Show : String) {
     val media = uiState.media
 
 
+    // Hide system status bar and navigation bar when entering full screen
+    DisposableEffect(Unit) {
+        val window = (context as? Activity)?.window
+        if (window != null) {
+            val insetsController = WindowCompat.getInsetsController(window, window.decorView)
+
+            // 1. Hide both status bar & navigation bar
+            insetsController.hide(WindowInsetsCompat.Type.navigationBars())
+
+            // 2. Allow swiping edges to temporarily show controls without pushing layout
+            insetsController.systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
+
+        onDispose {
+            window?.let {
+                val insetsController = WindowCompat.getInsetsController(it, it.decorView)
+                insetsController.show(WindowInsetsCompat.Type.systemBars())
+            }
+        }
+    }
+
+
     Box(Modifier
         .fillMaxSize()
         .background(VMocha.Crust)) {
@@ -163,30 +181,10 @@ fun MediaPage(navController: NavHostController,Show : String) {
 
             TopBar(navController,progress)
 
-//            Box(
-//                Modifier
-//                    .fillMaxWidth()
-//                    .height(50.dp)
-//                    .background(shape = RoundedCornerShape(20.dp), color = VMocha.Crust)
-//            )
-//            {
-//                TypewriterText(
-//                    "Movies",
-//                    Modifier
-//                        .fillMaxSize()
-//                        .align(Alignment.Center)
-//                        .padding(vertical = 10.dp),
-//                    fontSize = 20.sp,
-//                    textAlign = TextAlign.Center,
-//                    fontWeight = FontWeight.ExtraBold,
-//                    color = VMocha.Text
-//                )
-//            }
-
             Spacer(Modifier.padding(2.dp))
 
             LazyColumn {
-                    items(media.chunked(2)) { row ->
+                    items(media.chunked(3)) { row ->
 
                     Row(
                         Modifier.fillMaxWidth(),

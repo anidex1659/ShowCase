@@ -1,6 +1,7 @@
 package com.example.showcase.features.Player.ui
 
 import android.content.res.Configuration
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -11,6 +12,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
@@ -31,6 +33,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -50,6 +53,9 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -62,12 +68,15 @@ import coil.compose.AsyncImage
 import com.example.showcase.core.progresmanager.ProgressManager
 import com.example.showcase.features.HomeScreen.BootomBAR
 import com.example.showcase.features.Player.PlayerCore.PlayerManager
+import com.example.showcase.features.Player.PlayerCore.VlcPlayerManager
+import com.example.showcase.features.Player.PlayerViewModel.PlayerEngine
 import com.example.showcase.features.Player.PlayerViewModel.PlayerViewModel
-import com.example.showcase.features.Player.model.MediaType
 import com.example.showcase.features.Player.model.PlayerInfoState
 import com.example.showcase.features.Player.model.PlayerMedia
 import com.example.showcase.features.Player.model.TrackSheetType
-import com.example.showcase.features.Player.repository.PlayerViewModelFactory
+import com.example.showcase.features.Player.PlayerCore.repository.PlayerViewModelFactory
+import com.example.showcase.features.Player.model.MediaType
+import com.example.showcase.features.Player.model.PlayerState
 import com.example.showcase.ui.navigation.PlayerGraph
 import com.example.showcase.ui.navigation.PlayerType
 import com.example.showcase.ui.theme.VMocha
@@ -86,11 +95,13 @@ fun PlayScreenV(
     val playerViewModel: PlayerViewModel = viewModel(
         factory = PlayerViewModelFactory()
     )
+    val context = LocalContext.current
     val state by playerViewModel.state.collectAsState()
     val metadata by playerViewModel.infoState.collectAsState()
     val isFullscreen by playerViewModel.isFullscreen.collectAsState()
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val playerEngine by playerViewModel.playerEngine.collectAsState()
 
     LaunchedEffect(isLandscape) {
         playerViewModel.setFullscreen(isLandscape)
@@ -108,13 +119,19 @@ fun PlayScreenV(
         }
     }
 
+    LaunchedEffect(
+        playerEngine
+    ) {
+        if (playerEngine== PlayerEngine.VLC) Toast.makeText(context,"(HW) Failed - Switched To Software (SW) acceleration", Toast.LENGTH_SHORT).show()
+    }
+
     val progress by ProgressManager
         .progress
         .collectAsState()
 
 
     if (!isFullscreen) {
-        Box() {
+        Box {
 
             state.media?.poster?.let {
                 AsyncImage(
@@ -146,35 +163,45 @@ fun PlayScreenV(
                         .background(VMocha.Crust, RoundedCornerShape(20.dp))
 
                 ) {
-                    Column() {
+                    Column {
                         Box(
                             Modifier
                                 .padding(horizontal = 5.dp)
                                 .clip(shape = RoundedCornerShape(20.dp))
                         ) {
-                            player(PlayerGraph.playerManager, playerViewModel, isFullscreen, playerInfoState = metadata)
+                            Player(
+                                PlayerGraph.playerManager,
+                                playerViewModel,
+                                isFullscreen,
+                                playerInfoState = metadata,
+                                vlcPlayerManager=PlayerGraph.vlcPlayerManager
+                            )
                         }
                         Spacer(Modifier.padding(5.dp))
-                        MedialPlean(metadata, state, playerViewModel)
+
+                        MedialPlean(metadata, playerViewModel, playerEngine)
                     }
 
                 }
                 Spacer(Modifier.padding(5.dp))
-                if (state.media?.type == MediaType.EPISODE) {
-                    EpPanel(
-                        state.playlist,
-                        state.currentIndex,
-                        onEpisodeClick = {
-                            playerViewModel.playEpisode(it)
 
-                        })
-                }
+                EpPanel(
+                    state.playlist,
+                    state.currentIndex,
+                    onEpisodeClick = {
+                        playerViewModel.playEpisode(it)
+
+                    },
+                    state,
+                    metadata
+                )
+
                 BootomBAR(navController, progress)
             }
 
         }
     } else {
-        fullScreenPlayer(PlayerGraph.playerManager, playerViewModel, metadata, state)
+        FullScreenPlayer(PlayerGraph.playerManager, playerViewModel, metadata, state)
     }
 
     val sheet by playerViewModel.trackSheet.collectAsState()
@@ -204,17 +231,20 @@ fun PlayScreenV(
 }
 
 @Composable
-fun player(
+fun Player(
     playerManager: PlayerManager,
     playerViewModel: PlayerViewModel,
     isfullscreen: Boolean,
     playerInfoState: PlayerInfoState,
     modifier: Modifier = Modifier
         .fillMaxWidth()
-        .height(220.dp)
+        .height(220.dp),
+    vlcPlayerManager: VlcPlayerManager
 ) {
 
     val state by playerViewModel.state.collectAsState()
+
+    val playerEngine by playerViewModel.playerEngine.collectAsState()
 
     var controlsVisible by remember<MutableState<Boolean>> {
         mutableStateOf(true)
@@ -238,13 +268,22 @@ fun player(
 
     ) {
 
+        when (playerEngine) {
+             PlayerEngine.EXO ->
+            VideoPlayer(
+                playerManager,
+                Modifier
+                    .fillMaxWidth()
+                    .matchParentSize()
+            )
 
-        VideoPlayer(
-            playerManager,
-            Modifier
-                .fillMaxWidth()
-                .matchParentSize()
-        )
+            PlayerEngine.VLC ->
+            VlcVideoPlayer(
+                vlcPlayerManager,
+                Modifier
+                    .fillMaxSize()
+            )
+        }
 
         AnimatedVisibility(
             visible = controlsVisible,
@@ -264,7 +303,7 @@ fun player(
                     .padding(horizontal = 10.dp),
                 playerViewModel,
                 playerManager,
-                playerInfoState
+                playerInfoState,
             )
         }
         AnimatedVisibility(
@@ -278,7 +317,7 @@ fun player(
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
                     .height(30.dp)
-                    .padding(horizontal = 10.dp), playerViewModel
+                    .padding(horizontal = 10.dp), playerViewModel,playerEngine
             )
         }
         //^^controls
@@ -286,7 +325,7 @@ fun player(
         Box(
             Modifier
                 .fillMaxHeight(0.7f)
-                .width(750.dp)
+                .fillMaxWidth(0.75f)
                 .align(Alignment.Center)
                 .pointerInput(Unit) {
                     detectTapGestures(
@@ -296,10 +335,16 @@ fun player(
 
                             if (offset.x < size.width / 2) {
                                 // Left half
-                                playerManager.seekBackward()
+                                when (playerEngine) {
+                                    PlayerEngine.EXO -> PlayerGraph.playerManager.seekBackward()
+                                    PlayerEngine.VLC -> PlayerGraph.vlcPlayerManager.seekBackward()
+                                }
                             } else {
                                 // Right half
-                                playerManager.seekForward()
+                                when (playerEngine) {
+                                    PlayerEngine.EXO -> PlayerGraph.playerManager.seekForward()
+                                    PlayerEngine.VLC -> PlayerGraph.vlcPlayerManager.seekForward()
+                                }
                             }
                         })
                 })
@@ -311,11 +356,12 @@ fun player(
             exit = fadeOut()
         ) {
             CenterControlls(
-                playerManager, playerViewModel, state,
+                 playerViewModel, state,
                 Modifier
-                    .width(750.dp)
+                    .fillMaxWidth()
                     .padding(bottom = 12.dp)
-                    .align(Alignment.Center)
+                    .align(Alignment.Center),
+                playerEngine
             )
         }
 
@@ -328,34 +374,118 @@ fun player(
 fun EpPanel(
     playlist: List<PlayerMedia>,
     currentIndex: Int,
-    onEpisodeClick: (Int) -> Unit
+    onEpisodeClick: (Int) -> Unit,
+    state: PlayerState,
+    metadata: PlayerInfoState
 ) {
+    var start by remember { mutableStateOf(false) }
+    var startL by remember { mutableStateOf(false) }
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
+    val hight by animateFloatAsState(
+        targetValue = if (start) 0.9f else 0f, animationSpec = tween(1200), label = ""
+    )
+    val length by animateFloatAsState(
+        targetValue = if (startL) 0.8f else 0f, animationSpec = tween(1200), label = ""
+    )
+    LaunchedEffect(start) {
+        start = true
+        if (start) {
+            delay(1000)
+            startL = true
+        }
+    }
+
+    if (state.media?.type == MediaType.EPISODE) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(hight)
+                .background(
+                    VMocha.Crust, shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
+                )
+                .padding(top = 20.dp, start = 5.dp, end = 5.dp)
+        ) {
+
+            itemsIndexed(playlist) { index, media ->
+                EpCard(
+                    media = media, selected = index == currentIndex, onClick = {
+                        onEpisodeClick(index)
+                    })
+            }
+
+        }
+    }
+    else if (state.media?.type == MediaType.MOVIE)
+    {
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(hight)
             .background(
                 VMocha.Crust, shape = RoundedCornerShape(20.dp)
             )
-            .padding(top = 20.dp, start = 5.dp, end = 5.dp)
-    ) {
+            .padding(top = 20.dp, start = 5.dp, end = 5.dp))
+        {
+            Column{
+                Text(
+                    text = metadata.movie?.metadata?.tagline?:"",
+                    fontSize = 20.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    style = TextStyle(
+                        fontFamily = FontFamily.Serif,
+                        fontWeight = FontWeight.Bold,
+                        lineHeight = 2.sp
+                    ),
+                    color = VMocha.Text,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                AsyncImage(
+                    model = state.media.backdrop,
+                    contentDescription = "",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight(0.5f)
+                        .padding(top = 5.dp, start = 5.dp, end = 5.dp)
+                        .clip(shape = RoundedCornerShape(20.dp))
+                        .border(1.dp, VMocha.Lavender, RoundedCornerShape(20.dp))
+                )
+                Box(Modifier.fillMaxWidth()){
+                Divider(
+                    Modifier
+                        .padding(5.dp)
+                        .clip(shape = RoundedCornerShape(20))
+                        .fillMaxWidth(length)
+                        .align(Alignment.Center),
+                    thickness = 1.dp,
+                    color = VMocha.Text
+                )}
 
-        itemsIndexed(playlist) { index, media ->
-            EpCard(
-                media = media,
-                selected = index == currentIndex,
-                onClick = {
-                    onEpisodeClick(index)
-                })
+                Text(
+                    text = metadata.movie?.metadata?.genres?.joinToString (" | ").toString() 	,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = VMocha.Text,
+                )
+                Text(
+                    text = metadata.movie?.metadata?.plot?:"",
+                    fontSize = 15.sp,
+                    textAlign = TextAlign.Start,
+                    color = VMocha.Text,
+                    style = TextStyle(
+                        lineHeight = 17.sp
+                    )
+                )
+            }
         }
-
     }
 
 }
 
 //@Preview
 @Composable
-private fun EpCard(media: PlayerMedia, selected: Boolean, onClick: () -> Unit) {
+fun EpCard(media: PlayerMedia, selected: Boolean, onClick: () -> Unit) {
     Card(
         onClick = onClick,
         colors = CardDefaults.cardColors(
@@ -393,32 +523,28 @@ private fun EpCard(media: PlayerMedia, selected: Boolean, onClick: () -> Unit) {
                     .padding(start = 0.dp, top = 10.dp, end = 5.dp, bottom = 10.dp)
             ) {
                 Text(
-                    media.title, // RATING
+                    media.title,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
                     color = VMocha.Text,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier
-                        .fillMaxWidth()
-                    //.basicMarquee()
-                    ,
+                        .fillMaxWidth(),
                     maxLines = 2,
                     textAlign = TextAlign.Start
 
                 )
                 Text(
-                    " S${media.seasonNumber} | Ep${media.episodeNumber}",
+                    media.plot,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Light,
                     color = VMocha.Subtext1,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(top = 5.dp)
-                    //.basicMarquee()
-                    ,
+                        .padding(top = 5.dp),
                     textAlign = TextAlign.Start
-
                 )
             }
 
@@ -450,45 +576,6 @@ fun formatTime(ms: Long): String {
             seconds
         )
 }
-
-@Composable
-fun AnimatedProgressBar(
-    progress: Float,
-    modifier: Modifier
-) {
-
-    val animatedProgress by animateFloatAsState(
-        targetValue = progress,
-        animationSpec = tween(700),
-        label = ""
-    )
-
-    Box(
-        modifier = modifier
-
-    ) {
-
-        Box(
-            Modifier
-                .fillMaxWidth(animatedProgress)
-                .fillMaxHeight()
-                .background(
-                    VMocha.Lavender, RoundedCornerShape(20.dp)
-                )
-        )
-        {
-            Box(
-                modifier = Modifier
-                    .background(
-                        shape = RoundedCornerShape(100), color = VMocha.Blue
-                    )
-                    .size(20.dp)
-                    .align(Alignment.BottomEnd)
-            )
-        }
-    }
-}
-
 @Composable
 fun SeekBar(
     progress: Float,

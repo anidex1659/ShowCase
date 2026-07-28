@@ -25,6 +25,14 @@ fun GlobalDialogHost() {
             )
         }
 
+        is GlobalDialog.EditMovieArtwork -> {
+
+            EditArtworkDialog(
+                movieId = current.movieId,
+                onDismiss = DialogManager::dismiss
+            )
+        }
+
         is GlobalDialog.EditSeriesMetadata -> {
 
             EditSeriesMetadataDialog(

@@ -2,6 +2,10 @@ package com.example.showcase.features.Player.model
 
 import com.example.showcase.features.InfoPage.uistate.MovieInfoUiModel
 import com.example.showcase.features.InfoPage.uistate.SeriesInfoUiModel
+import com.example.showcase.ui.theme.VMocha
+import android.graphics.Color
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.ui.CaptionStyleCompat
 
 
 data class PlayerState(
@@ -72,6 +76,17 @@ data class SubtitleTrack(
     val selected: Boolean,
 
     val isOff: Boolean = false
+)
+
+@UnstableApi
+data class SubtitleStyle(
+    val textColor: Int = Color.WHITE, //font color
+    val backgroundColor: Int = Color.BLACK, // background color
+    val backgroundAlpha: Int = 160, // background opacity
+    val textSize: Float = 18f, // font size
+    val edgeType: Int = CaptionStyleCompat.EDGE_TYPE_NONE, //font edge
+    val edgeColor: Int = Color.BLACK, // edge color
+    val windowColor: Int = Color.TRANSPARENT // window color
 )
 
 enum class TrackSheetType {

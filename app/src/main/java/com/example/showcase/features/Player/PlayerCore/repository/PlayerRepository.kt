@@ -1,4 +1,4 @@
-package com.example.showcase.features.Player.repository
+package com.example.showcase.features.Player.PlayerCore.repository
 
 import android.content.Context
 import android.util.Log
@@ -51,23 +51,15 @@ class PlayerRepository(
                             val playback=dao.getEpisodePlayback(it.episode.id)
 
                             PlayerMedia(
-
                                 id = episode.id,
-
                                 type = MediaType.EPISODE,
-
                                 title = episode.title,
-
                                 videoUri = episode.filePath,
-
+                                plot = it.plot,
                                 poster = series.poster?.uri,
-
                                 backdrop = series.backdrop?.uri,
-
                                 seasonNumber = episode.seasonNumber,
-
                                 episodeNumber = episode.episodeNumber,
-
                                 duration = episode.duration,
                                 resume = playback?.position ?: 0L
                             )

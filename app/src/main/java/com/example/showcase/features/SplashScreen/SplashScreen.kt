@@ -1,7 +1,9 @@
 package com.example.showcase.features.SplashScreen
 
 import android.window.SplashScreen
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -27,7 +29,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
@@ -35,6 +39,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -42,6 +47,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.media3.extractor.TrueHdSampleRechunker
 import androidx.navigation.NavHostController
 import androidx.xr.scenecore.runtime.Resource
+import coil.compose.AsyncImage
 import com.example.showcase.R
 import com.example.showcase.features.Library.ui.Components.TypewriterText
 import com.example.showcase.features.SplashScreen.model.splashItems
@@ -132,6 +138,16 @@ fun SplashScreenImg() {
         animationSpec = tween(1000)
     )
 
+    val iconscale by animateFloatAsState(
+        targetValue = if (start) 1f else 0f ,
+        animationSpec = tween(1000)
+    )
+
+    val padding by animateDpAsState(
+        targetValue = if (start) 50.dp else 0.dp,
+        animationSpec = tween(1000)
+    )
+
 
     Box(
         Modifier
@@ -149,7 +165,8 @@ fun SplashScreenImg() {
                 .background(
                     backgroundColor,
                     shape = RoundedCornerShape(20.dp)
-                ).clickable{
+                )
+                .clickable {
 
                     leftItem = splashItems.random()
 
@@ -170,7 +187,8 @@ fun SplashScreenImg() {
         )
 
 
-        Box(Modifier.fillMaxWidth()
+        Box(Modifier
+            .fillMaxWidth()
             .padding(top = 20.dp, end = leftWidth)){ //top title
             Text(
                 leftItem.title,
@@ -204,18 +222,21 @@ fun SplashScreenImg() {
 
             )
 
-            Box(Modifier.align(Alignment.CenterEnd)
+            Box(Modifier
+                .align(Alignment.CenterEnd)
                 .fillMaxSize(0.9f)
                 .background(
                     VMocha.Lavender.copy(alpha = 0.2f),
-                    shape = RoundedCornerShape(20.dp))
+                    shape = RoundedCornerShape(20.dp)
+                )
             )
 
         }
 
 
 
-        Box(Modifier.fillMaxWidth()
+        Box(Modifier
+            .fillMaxWidth()
             .align(Alignment.BottomStart)
             .padding(bottom = 20.dp, start = rightWidth)){//bottom title
             Text(
@@ -250,27 +271,54 @@ fun SplashScreenImg() {
 
             )
 
-            Box(Modifier.align(Alignment.CenterStart)
+            Box(Modifier
+                .align(Alignment.CenterStart)
                 .fillMaxSize(0.9f)
                 .background(
                     VMocha.Lavender.copy(alpha = 0.2f),
-                    shape = RoundedCornerShape(20.dp))
+                    shape = RoundedCornerShape(20.dp)
+                )
             )
 
         }
 
 
-
-
-        TypewriterText(
-            "ShowCase",
-            typingSpeed = 5,
-            fontSize = 30.sp,
+        Text(
+            "Your Media",
+            fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
             style = TextStyle(
-                fontFamily = FontFamily.SansSerif),
+                fontFamily = FontFamily.SansSerif
+            ),
             color = VMocha.Text,
-            modifier = Modifier.align(Alignment.Center))
+            modifier = Modifier.align(Alignment.CenterStart).padding(start=5.dp, bottom = padding)
+        )
+
+            Image(
+                painter = painterResource(R.drawable.applogo),
+                contentDescription = "",
+                modifier = Modifier.align(Alignment.Center)
+                    .padding(top = 10.dp)
+                    .size(225.dp)
+                    .scale(iconscale),
+                colorFilter = ColorFilter.tint(VMocha.Crust)
+            )
+
+     Text(
+            "Your World",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            style = TextStyle(
+                fontFamily = FontFamily.SansSerif
+            ),
+            color = VMocha.Text,
+            modifier = Modifier.align(Alignment.CenterEnd).padding(end =5.dp, top = padding)
+        )
+
+
+
+
+
 
 
     }
@@ -366,7 +414,8 @@ fun LoadingPopup(
                     .background(
                         backgroundColor,
                         shape = RoundedCornerShape(20.dp)
-                    ).clickable{
+                    )
+                    .clickable {
 
                         leftItem = splashItems.random()
 
@@ -387,7 +436,8 @@ fun LoadingPopup(
             )
 
 
-            Box(Modifier.fillMaxWidth()
+            Box(Modifier
+                .fillMaxWidth()
                 .padding(top = 5.dp, end = leftWidth)){  //top title
                 Text(
                     leftItem.title,
@@ -421,18 +471,21 @@ fun LoadingPopup(
 
                 )
 
-                Box(Modifier.align(Alignment.CenterEnd)
+                Box(Modifier
+                    .align(Alignment.CenterEnd)
                     .fillMaxSize(0.9f)
                     .background(
                         VMocha.Lavender.copy(alpha = 0.2f),
-                        shape = RoundedCornerShape(20.dp))
+                        shape = RoundedCornerShape(20.dp)
+                    )
                 )
 
             }
 
 
 
-            Box(Modifier.fillMaxWidth()
+            Box(Modifier
+                .fillMaxWidth()
                 .align(Alignment.BottomStart)
                 .padding(bottom = 5.dp, start = rightWidth)){//bottom title
                 Text(
@@ -467,11 +520,13 @@ fun LoadingPopup(
 
                 )
 
-                Box(Modifier.align(Alignment.CenterStart)
+                Box(Modifier
+                    .align(Alignment.CenterStart)
                     .fillMaxSize(0.9f)
                     .background(
                         VMocha.Lavender.copy(alpha = 0.2f),
-                        shape = RoundedCornerShape(20.dp))
+                        shape = RoundedCornerShape(20.dp)
+                    )
                 )
 
             }

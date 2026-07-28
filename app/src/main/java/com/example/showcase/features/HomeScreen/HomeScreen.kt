@@ -1,5 +1,6 @@
 package com.example.showcase.features.HomeScreen
 
+import android.app.Activity
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
@@ -30,6 +31,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -45,6 +47,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
@@ -59,8 +64,9 @@ import com.example.showcase.features.MetaData.data.repository.metadata.sires.Ser
 import com.example.showcase.features.Player.PlayerViewModel.PlayerViewModel
 import com.example.showcase.features.Player.model.storage.MetadataJsonManager
 import com.example.showcase.features.Player.model.storage.MovieMetadataJsonManager
-import com.example.showcase.features.Player.repository.PlayerRepository
+import com.example.showcase.features.Player.PlayerCore.repository.PlayerRepository
 import com.example.showcase.features.SplashScreen.SplashScreenImg
+import com.example.showcase.ui.navigation.LibraryRoute
 import com.example.showcase.ui.navigation.PlayerGraph
 import com.example.showcase.ui.theme.VMocha
 import kotlinx.coroutines.delay
@@ -84,8 +90,6 @@ import kotlinx.coroutines.delay
             .dao()
 
 
-    val seriesRepository = remember { SeriesRepository(dao) }
-    val movieRepository = remember { MovieRepository(dao) }
 
 
     val metadataStorageRepository: MetadataStorageRepository = MetadataStorageRepository(
@@ -93,6 +97,9 @@ import kotlinx.coroutines.delay
         jsonManager = MetadataJsonManager(dao),
         movieJsonManager = MovieMetadataJsonManager(dao)
     )
+    val seriesRepository = remember { SeriesRepository(dao,metadataStorageRepository) }
+    val movieRepository = remember { MovieRepository(dao) }
+
 
     val playerrepository = PlayerRepository(seriesRepository, movieRepository, dao,metadataStorageRepository)
 
@@ -113,7 +120,8 @@ import kotlinx.coroutines.delay
 
         PlayerViewModel(
             PlayerGraph.playerManager,
-            PlayerGraph.repository
+            PlayerGraph.vlcPlayerManager,
+            PlayerGraph.repository,
         )
     }
 
@@ -171,6 +179,8 @@ import kotlinx.coroutines.delay
 
             delay(8000) // every 8 seconds
         }
+
+
     }
 
     var animationFinished by remember {
@@ -191,13 +201,40 @@ import kotlinx.coroutines.delay
         mutableStateOf(false)
     }
 
+    LaunchedEffect(ready)
+    {
+        if (ready && dao.getLibraries().count() == 0) {
+            navController.navigate(LibraryRoute)
+        }
+    }
+
+    // Hide system status bar and navigation bar when entering full screen
+    DisposableEffect(Unit) {
+        val window = (context as? Activity)?.window
+        if (window != null) {
+            val insetsController = WindowCompat.getInsetsController(window, window.decorView)
+
+            // 1. Hide both status bar & navigation bar
+            insetsController.hide(WindowInsetsCompat.Type.navigationBars())
+
+            // 2. Allow swiping edges to temporarily show controls without pushing layout
+            insetsController.systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
+
+        onDispose {
+            window?.let {
+                val insetsController = WindowCompat.getInsetsController(it, it.decorView)
+                insetsController.show(WindowInsetsCompat.Type.systemBars())
+            }
+        }
+    }
+
     PullToRefreshBox(
         isRefreshing = refreshing,
         onRefresh = {
             refreshing = true
-
             viewModel.refresh()
-
             refreshing = false
         }
     ) {

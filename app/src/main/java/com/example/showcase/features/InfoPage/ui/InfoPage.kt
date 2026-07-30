@@ -1,4 +1,4 @@
-package com.example.showcase.features.InfoPage
+package com.example.showcase.features.InfoPage.ui
 
 import android.app.Activity
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -57,10 +57,10 @@ import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.showcase.core.progresmanager.ProgressManager
 import com.example.showcase.core.progresmanager.ScanProgress
-import com.example.showcase.features.HomeScreen.BootomBAR
+import com.example.showcase.features.HomeScreen.ui.BootomBAR
 import com.example.showcase.features.InfoPage.repository.InfoRepository
-import com.example.showcase.features.InfoPage.uistate.MovieInfoUiModel
-import com.example.showcase.features.InfoPage.uistate.SeriesInfoUiModel
+import com.example.showcase.features.InfoPage.model.MovieInfoUiModel
+import com.example.showcase.features.InfoPage.model.SeriesInfoUiModel
 import com.example.showcase.features.InfoPage.viewmodel.InfoViewModel
 import com.example.showcase.features.InfoPage.viewmodel.InfoViewModelFactory
 import com.example.showcase.features.Library.ui.Components.TypewriterText
@@ -72,7 +72,7 @@ import com.example.showcase.features.Player.model.storage.MetadataJsonManager
 import com.example.showcase.features.Player.model.storage.MovieMetadataJsonManager
 import com.example.showcase.features.Player.PlayerViewModel.PlayerViewModel
 import com.example.showcase.features.Player.PlayerCore.repository.PlayerRepository
-import com.example.showcase.features.SplashScreen.SplashScreenImg
+import com.example.showcase.features.SplashScreen.ui.SplashScreenImg
 import com.example.showcase.ui.navigation.PlayerGraph
 import com.example.showcase.ui.navigation.PlayerRoute
 import com.example.showcase.ui.navigation.PlayerType

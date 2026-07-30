@@ -3,7 +3,7 @@ package com.example.showcase.features.InfoPage.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.showcase.features.InfoPage.repository.InfoRepository
-import com.example.showcase.features.InfoPage.uistate.InfoUiState
+import com.example.showcase.features.InfoPage.model.InfoUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch

@@ -1,4 +1,4 @@
-package com.example.showcase.features.HomeScreen
+package com.example.showcase.features.HomeScreen.ui
 
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -37,7 +37,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,9 +51,9 @@ import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.showcase.R
 import com.example.showcase.core.progresmanager.ScanProgress
-import com.example.showcase.features.HomeScreen.uistate.HomeUiState
-import com.example.showcase.features.InfoPage.MoviePosterCard2
-import com.example.showcase.features.InfoPage.PosterCard2
+import com.example.showcase.features.HomeScreen.model.HomeUiState
+import com.example.showcase.features.InfoPage.ui.MoviePosterCard2
+import com.example.showcase.features.InfoPage.ui.PosterCard2
 import com.example.showcase.features.MetaData.data.model.MovieUiModel
 import com.example.showcase.features.MetaData.data.model.SeriesUiModel
 import com.example.showcase.features.Player.PlayerViewModel.PlayerViewModel

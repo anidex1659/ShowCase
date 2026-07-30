@@ -66,7 +66,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.showcase.core.progresmanager.ProgressManager
-import com.example.showcase.features.HomeScreen.BootomBAR
+import com.example.showcase.features.HomeScreen.ui.BootomBAR
 import com.example.showcase.features.Player.PlayerCore.PlayerManager
 import com.example.showcase.features.Player.PlayerCore.VlcPlayerManager
 import com.example.showcase.features.Player.PlayerViewModel.PlayerEngine
@@ -74,7 +74,7 @@ import com.example.showcase.features.Player.PlayerViewModel.PlayerViewModel
 import com.example.showcase.features.Player.model.PlayerInfoState
 import com.example.showcase.features.Player.model.PlayerMedia
 import com.example.showcase.features.Player.model.TrackSheetType
-import com.example.showcase.features.Player.PlayerCore.repository.PlayerViewModelFactory
+import com.example.showcase.features.Player.PlayerViewModel.PlayerViewModelFactory
 import com.example.showcase.features.Player.model.MediaType
 import com.example.showcase.features.Player.model.PlayerState
 import com.example.showcase.ui.navigation.PlayerGraph
@@ -132,7 +132,6 @@ fun PlayScreenV(
 
     if (!isFullscreen) {
         Box {
-
             state.media?.poster?.let {
                 AsyncImage(
                     model = it,

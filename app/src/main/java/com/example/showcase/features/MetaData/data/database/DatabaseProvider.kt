@@ -1,8 +1,10 @@
 package com.example.showcase.features.MetaData.data.database
 
 import android.content.Context
+import androidx.media3.common.util.UnstableApi
 import androidx.room.Room
 
+@UnstableApi
 object DatabaseProvider {
 
     @Volatile
@@ -24,7 +26,6 @@ object DatabaseProvider {
                     .build()
 
             INSTANCE = instance
-
             instance
         }
     }

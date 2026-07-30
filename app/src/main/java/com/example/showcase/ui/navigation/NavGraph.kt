@@ -5,13 +5,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.example.showcase.features.HomeScreen.HomeScreen
-import com.example.showcase.features.InfoPage.InfoPage
+import com.example.showcase.features.HomeScreen.ui.HomeScreen
+import com.example.showcase.features.InfoPage.ui.InfoPage
 import com.example.showcase.features.Library.ui.LibraryScreen
-import com.example.showcase.features.MediaPages.MediaPage
+import com.example.showcase.features.MediaPages.ui.MediaPage
 //import com.example.showcase.features.MetaData.data.scanner.ScannerTestScreen
 import com.example.showcase.features.Player.ui.PlayScreenV
-import com.example.showcase.features.SplashScreen.SplashScreen
+import com.example.showcase.features.Settings.ui.Settings
+import com.example.showcase.features.SplashScreen.ui.SplashScreen
 
 @Composable
 fun AppNavGraph() {
@@ -25,6 +26,10 @@ fun AppNavGraph() {
 
         composable<SplashRoute> {
             SplashScreen(navController)
+        }
+
+        composable<SettingsRoute> {
+            Settings()
         }
 
         composable<HomeRoute> {

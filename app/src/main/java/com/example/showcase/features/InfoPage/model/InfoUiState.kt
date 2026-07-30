@@ -1,4 +1,4 @@
-package com.example.showcase.features.InfoPage.uistate
+package com.example.showcase.features.InfoPage.model
 
 import com.example.showcase.features.MetaData.data.database.entity.movie.MoviePlaybackEntity
 import com.example.showcase.features.MetaData.data.database.entity.series.PlaybackHistoryEntity

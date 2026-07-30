@@ -1,8 +1,7 @@
-package com.example.showcase.features.Player.PlayerCore.repository
+package com.example.showcase.features.Player.PlayerViewModel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.showcase.features.Player.PlayerViewModel.PlayerViewModel
 import com.example.showcase.ui.navigation.PlayerGraph
 
 class PlayerViewModelFactory : ViewModelProvider.Factory {

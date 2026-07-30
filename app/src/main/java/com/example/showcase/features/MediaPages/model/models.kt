@@ -1,4 +1,4 @@
-package com.example.showcase.features.MediaPages
+package com.example.showcase.features.MediaPages.model
 
 import com.example.showcase.features.MetaData.data.model.MovieUiModel
 import com.example.showcase.features.MetaData.data.model.SeriesUiModel

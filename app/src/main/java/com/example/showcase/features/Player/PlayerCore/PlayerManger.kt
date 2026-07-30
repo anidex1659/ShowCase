@@ -8,6 +8,7 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.TrackSelectionOverride
 import androidx.media3.exoplayer.ExoPlayer
+import com.example.showcase.core.SettingesManger.SettingsManager
 import com.example.showcase.features.Player.model.AudioTrack
 import com.example.showcase.features.Player.model.PlayerMedia
 import com.example.showcase.features.Player.model.PlayerState
@@ -27,7 +28,7 @@ class PlayerManager(
 
         private const val UPDATE_INTERVAL = 500L
 
-        private const val SEEK_AMOUNT = 10_000L
+       val SEEK_AMOUNT = SettingsManager.seekAmount////
 
     }
 

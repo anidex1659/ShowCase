@@ -5,17 +5,28 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.OptIn
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
+import androidx.media3.common.util.UnstableApi
+import com.example.showcase.core.SettingesManger.SettingsManager
+import com.example.showcase.features.MetaData.data.database.DatabaseProvider
 import com.example.showcase.ui.navigation.AppNavGraph
 import com.example.showcase.ui.theme.ShowCaseTheme
 
 
 class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
+	@OptIn(UnstableApi::class)
+	override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        val database =
+            DatabaseProvider.getDatabase(this)
+
+        SettingsManager.initialize(
+            database.SettingsDao()
+        )
         setContent {
             ShowCaseTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->

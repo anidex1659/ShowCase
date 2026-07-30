@@ -8,10 +8,6 @@ object SplashRoute
 
 
 
-
-
-
-
 @Serializable
 object HomeRoute
 
@@ -25,7 +21,8 @@ data class MediaRoute(
 
 
 
-
+@Serializable
+object SettingsRoute
 
 
 @Serializable
@@ -41,8 +38,7 @@ object PlayerV
 object SearchRoute
 @Serializable
 object ScannerTestRoute
-@Serializable
-object SettingsRoute
+
 
 @Serializable
 data class MovieDetailsRoute(

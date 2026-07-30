@@ -1,4 +1,4 @@
-package com.example.showcase.features.InfoPage
+package com.example.showcase.features.InfoPage.ui
 
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode

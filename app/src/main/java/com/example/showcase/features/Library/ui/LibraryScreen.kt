@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -66,8 +67,9 @@ import com.example.showcase.features.MetaData.data.scanner.Detectors.SeriesDetec
 import com.example.showcase.features.Player.model.storage.ArtworkStorageManager
 import com.example.showcase.features.Player.model.storage.MetadataJsonManager
 import com.example.showcase.features.Player.model.storage.MovieMetadataJsonManager
-import com.example.showcase.features.SplashScreen.LoadingPopup
+import com.example.showcase.features.SplashScreen.ui.LoadingPopup
 import com.example.showcase.ui.navigation.HomeRoute
+import com.example.showcase.ui.navigation.SettingsRoute
 import com.example.showcase.ui.popup.GlobalDialogHost
 import com.example.showcase.ui.theme.VMocha
 
@@ -368,7 +370,17 @@ fun MenuBar(
         }
 
         Row {
+            IconButton(
+                onClick = {navController.navigate(SettingsRoute)}
+            ) {
 
+                Icon(
+                    imageVector = Icons.Default.Settings,
+                    contentDescription = null,
+                    tint = tintcolor,
+                    modifier = Modifier.rotate(rotation)
+                )
+            }
             IconButton(
                 onClick = onScanClick
             ) {

@@ -45,7 +45,6 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
@@ -72,9 +71,20 @@ import com.example.showcase.ui.theme.VMocha
 import android.content.pm.ActivityInfo
 import android.widget.ToggleButton
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.magnifier
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderColors
+import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.SliderState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchColors
 import androidx.compose.material3.SwitchDefaults
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
@@ -82,6 +92,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.DefaultShadowColor
 import androidx.compose.ui.platform.LocalContext
+import com.example.showcase.features.Settings.ui.CaptionSetting
+import kotlin.math.roundToInt
+import kotlin.math.roundToLong
 
 @Composable
 fun SubtitleTrackSheet(
@@ -173,7 +186,7 @@ fun AudioTrackSheet(
 fun MedialPlean(
 	playerInfoState: PlayerInfoState,
 	playerViewModel: PlayerViewModel,
-	playerEngine: PlayerEngine= PlayerEngine.VLC,
+	playerEngine: PlayerEngine = PlayerEngine.VLC,
 ) {
 	val exoState by PlayerGraph.playerManager.playerState.collectAsState()
 	val vlcState by PlayerGraph.vlcPlayerManager.playerState.collectAsState()
@@ -269,25 +282,35 @@ fun MedialPlean(
 				Modifier.fillMaxSize()
 			) {
 				if (state.media?.type == MediaType.EPISODE) {
-					AsyncImage(
-						model = playerInfoState.series?.media?.poster?.uri,
-						contentDescription = "",
-						Modifier
-							.padding(5.dp)
-							.clip(RoundedCornerShape(20.dp))
-					)
+					Box {
+						AsyncImage(
+							model = playerInfoState.series?.media?.poster?.uri,
+							contentDescription = "",
+							Modifier
+								.padding(5.dp)
+								.clip(RoundedCornerShape(20.dp))
+								.align(Alignment.Center)
+								.shadow(
+									20.dp,
+									RoundedCornerShape(20.dp),
+									ambientColor = VMocha.Blue
+								)
+						)
+					}
 				} else {
-					AsyncImage(
-						model = state.media?.poster,
-						contentDescription = "",
-						Modifier
-							.padding(5.dp)
-							.clip(RoundedCornerShape(20.dp))
-					)
+					Box {
+						AsyncImage(
+							model = state.media?.poster,
+							contentDescription = "",
+							Modifier
+								.padding(5.dp)
+								.clip(RoundedCornerShape(20.dp))
+						)
+					}
 				}
 
 				Column(Modifier.padding(5.dp)) {
-					MidenControls(playerViewModel, player, state,playerEngine)
+					MidenControls(playerViewModel, player, state, playerEngine)
 					Divider(
 						Modifier
 							.fillMaxWidth()
@@ -340,7 +363,6 @@ fun MedialPlean(
 							}
 						}
 					} else {
-
 						LazyColumn() {
 							item {
 								TypewriterText(
@@ -383,7 +405,6 @@ fun MedialPlean(
 									color = VMocha.Subtext0
 								)
 							}
-
 						}
 					}
 
@@ -418,7 +439,6 @@ fun MidenControls(
 						PlayerEngine.VLC -> PlayerGraph.vlcPlayerManager.seekBackward()
 					}
 				},
-				// modifier = Modifier.align(Alignment.Center)
 			) {
 				Icon(
 					Icons.Default.KeyboardDoubleArrowLeft,
@@ -433,7 +453,6 @@ fun MidenControls(
 				onClick = {
 					playerViewModel.playPreviousEpisode()
 				},
-				// modifier = Modifier.align(Alignment.Center)
 			) {
 				Icon(
 					Icons.Default.ArrowBackIosNew,
@@ -486,7 +505,6 @@ fun MidenControls(
 						PlayerEngine.VLC -> PlayerGraph.vlcPlayerManager.seekForward()
 					}
 				},
-				// modifier = Modifier.align(Alignment.Center)
 			) {
 				Icon(
 					Icons.Default.KeyboardDoubleArrowRight,
@@ -528,6 +546,7 @@ enum class RotationMode {
 	LANDSCAPE,
 	PORTRAIT
 }
+
 fun Context.findActivity(): Activity? {
 	var context = this
 	while (context is ContextWrapper) {
@@ -536,6 +555,7 @@ fun Context.findActivity(): Activity? {
 	}
 	return null
 }
+
 @Composable
 fun AutoRotationToggleButton(
 	modifier: Modifier = Modifier
@@ -556,11 +576,13 @@ fun AutoRotationToggleButton(
 						act.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
 						currentMode = RotationMode.LANDSCAPE.ordinal
 					}
+
 					RotationMode.LANDSCAPE.ordinal -> {
 						// Switch to Locked Portrait
 						act.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 						currentMode = RotationMode.PORTRAIT.ordinal
 					}
+
 					else -> {
 						// Back to System Auto-Rotate
 						act.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
@@ -581,249 +603,4 @@ fun AutoRotationToggleButton(
 			contentDescription = "Toggle Rotation Lock"
 		)
 	}
-}
-
-@Preview
-@Composable
-private fun CaptionSetting() {
-	Column() {
-		Text(
-			"Captions Setting",
-			fontSize = 20.sp,
-			color = VMocha.Text,
-			textAlign = TextAlign.Start,
-			modifier = Modifier
-				.fillMaxWidth()
-				.padding(10.dp)
-		)
-		Row(verticalAlignment = Alignment.CenterVertically) {
-            var size by remember {
-                mutableStateOf(1)
-            }
-
-
-			Text(
-				"Size",
-				fontSize = 15.sp,
-				color = VMocha.Text,
-				textAlign = TextAlign.Start,
-				modifier = Modifier
-					.padding(10.dp)
-			)
-			Row(
-				horizontalArrangement = Arrangement.End,
-				verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-			) {
-				IconButton({
-					if (size < 20)size += 1
-                }, modifier = Modifier.size(20.dp)) {
-					Icon(
-					 Icons.Default.ExposurePlus1,
-						contentDescription = "",
-						tint = VMocha.Text
-					)
-				}
-                Spacer(Modifier.size(5.dp))
-				Text(
-					size.toString(),
-					fontSize = 15.sp,
-					color = VMocha.Text,
-					textAlign = TextAlign.Start,
-					modifier = Modifier
-						.padding(10.dp)
-				)
-                Spacer(Modifier.size(5.dp))
-                IconButton({
-					if (size > 0) size -= 1
-                }, modifier = Modifier.size(20.dp)) {
-                    Icon(
-                        Icons.Default.ExposureNeg1,
-                        contentDescription = "",
-                        tint = VMocha.Text
-                    )
-                }
-				Spacer(Modifier.size(5.dp))
-			}
-		}
-		Row(verticalAlignment = Alignment.CenterVertically) {
-			Text(
-				"Text Color",
-				fontSize = 15.sp,
-				color = VMocha.Text,
-				textAlign = TextAlign.Start,
-				modifier = Modifier
-					.padding(10.dp)
-			)
-
-			Row(
-				modifier = Modifier.fillMaxWidth(),
-				horizontalArrangement = Arrangement.End,
-				verticalAlignment = Alignment.CenterVertically
-			) {
-
-				IconButton({}, modifier = Modifier.size(20.dp)) {
-					Icon(
-						painter = painterResource(R.drawable.newmoon),
-						contentDescription = "",
-						tint = VMocha.Text
-					)
-				}
-
-				Spacer(Modifier.size(5.dp))
-
-				IconButton({}, modifier = Modifier.size(20.dp)) {
-					Icon(
-						painter = painterResource(R.drawable.newmoon),
-						contentDescription = "",
-						tint = VMocha.Mantle
-					)
-				}
-				Spacer(Modifier.size(5.dp))
-				IconButton({}, modifier = Modifier.size(20.dp)) {
-					Icon(
-						painter = painterResource(R.drawable.newmoon),
-						contentDescription = "",
-						tint = VMocha.Red
-					)
-				}
-				Spacer(Modifier.size(5.dp))
-				IconButton({}, modifier = Modifier.size(20.dp)) {
-					Icon(
-						painter = painterResource(R.drawable.newmoon),
-						contentDescription = "",
-						tint = VMocha.Lavender
-					)
-				}
-				Spacer(Modifier.size(5.dp))
-				IconButton(
-					{}, modifier = Modifier
-						.size(20.dp)
-						.drawBehind {
-							drawCircle(
-								brush = Brush.radialGradient(
-									colors = listOf(
-										VMocha.Blue.copy(0.6f),
-										VMocha.Blue.copy(0.2f),
-										Color.Transparent
-									)
-								),
-								radius = size.maxDimension / 1f
-							)
-						}) {
-					Icon(
-						painter = painterResource(R.drawable.newmoon),
-						contentDescription = "",
-						tint = VMocha.Blue
-					)
-				}
-				Spacer(Modifier.size(5.dp))
-			}
-
-		}
-
-		Row(
-			verticalAlignment = Alignment.CenterVertically,
-		) {
-			Text(
-				"BackGround",
-				fontSize = 15.sp,
-				color = VMocha.Text,
-				textAlign = TextAlign.Start,
-				modifier = Modifier
-					.padding(10.dp)
-			)
-			Row(
-				modifier = Modifier.fillMaxWidth(),
-				horizontalArrangement = Arrangement.End,
-				verticalAlignment = Alignment.CenterVertically
-			) {
-				Switch(
-					checked = true,
-					onCheckedChange = {},
-					colors = SwitchDefaults.colors(checkedTrackColor = VMocha.Blue, uncheckedTrackColor = VMocha.Text),
-					modifier = Modifier.scale(0.8f)
-				)
-			}
-		}
-
-
-		Row(verticalAlignment = Alignment.CenterVertically) {
-			Text(
-				"BackGround Color",
-				fontSize = 15.sp,
-				color = VMocha.Text,
-				textAlign = TextAlign.Start,
-				modifier = Modifier
-					.padding(10.dp)
-			)
-
-			Row(
-				modifier = Modifier.fillMaxWidth(),
-				horizontalArrangement = Arrangement.End,
-				verticalAlignment = Alignment.CenterVertically
-			) {
-
-				IconButton({}, modifier = Modifier.size(20.dp)) {
-					Icon(
-						painter = painterResource(R.drawable.newmoon),
-						contentDescription = "",
-						tint = VMocha.Text
-					)
-				}
-
-				Spacer(Modifier.size(5.dp))
-
-				IconButton({}, modifier = Modifier.size(20.dp)) {
-					Icon(
-						painter = painterResource(R.drawable.newmoon),
-						contentDescription = "",
-						tint = VMocha.Mantle
-					)
-				}
-				Spacer(Modifier.size(5.dp))
-				IconButton({}, modifier = Modifier.size(20.dp)) {
-					Icon(
-						painter = painterResource(R.drawable.newmoon),
-						contentDescription = "",
-						tint = VMocha.Red
-					)
-				}
-				Spacer(Modifier.size(5.dp))
-				IconButton({}, modifier = Modifier.size(20.dp)) {
-					Icon(
-						painter = painterResource(R.drawable.newmoon),
-						contentDescription = "",
-						tint = VMocha.Lavender
-					)
-				}
-				Spacer(Modifier.size(5.dp))
-				IconButton(
-					{}, modifier = Modifier
-						.size(20.dp)
-						.drawBehind {
-							drawCircle(
-								brush = Brush.radialGradient(
-									colors = listOf(
-										VMocha.Blue.copy(0.6f),
-										VMocha.Blue.copy(0.2f),
-										Color.Transparent
-									)
-								),
-								radius = size.maxDimension / 1f
-							)
-						}) {
-					Icon(
-						painter = painterResource(R.drawable.newmoon),
-						contentDescription = "",
-						tint = VMocha.Blue
-					)
-				}
-				Spacer(Modifier.size(5.dp))
-
-			}
-
-		}
-	}
-
 }

@@ -721,7 +721,8 @@ private fun Epdilog(
                     EpCard(
                         media = media, selected = index == currentIndex, onClick = {
                             onEpisodeClick(index)
-                        })
+                        }
+                    )
                 }
 
             }

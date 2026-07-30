@@ -1,11 +1,14 @@
 package com.example.showcase.features.MetaData.data.database
 
+import androidx.media3.common.util.UnstableApi
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import com.example.showcase.features.MetaData.data.database.dao.SettingsDao
 import com.example.showcase.features.MetaData.data.database.dao.ShowcaseDao
 import com.example.showcase.features.MetaData.data.database.entity.series.ArtworkEntity
 import com.example.showcase.features.MetaData.data.database.entity.series.EpisodeEntity
 import com.example.showcase.features.MetaData.data.database.entity.LibraryEntity
+import com.example.showcase.features.MetaData.data.database.entity.SettingsEntity
 import com.example.showcase.features.MetaData.data.database.entity.movie.MovieArtworkEntity
 import com.example.showcase.features.MetaData.data.database.entity.movie.MovieEntity
 import com.example.showcase.features.MetaData.data.database.entity.movie.MoviePlaybackEntity
@@ -15,8 +18,11 @@ import com.example.showcase.features.MetaData.data.database.entity.music.MusicPl
 import com.example.showcase.features.MetaData.data.database.entity.series.PlaybackHistoryEntity
 import com.example.showcase.features.MetaData.data.database.entity.series.SeriesEntity
 
+@UnstableApi
 @Database(
     entities = [
+
+        SettingsEntity::class,
 
         LibraryEntity::class,
 
@@ -35,11 +41,14 @@ import com.example.showcase.features.MetaData.data.database.entity.series.Series
 
 
     ],
-    version = 8
+    version = 12 //added settings
 )
 abstract class ShowcaseDatabase
     : RoomDatabase() {
 
     abstract fun dao():
             ShowcaseDao
+
+    abstract fun SettingsDao():
+            SettingsDao
 }

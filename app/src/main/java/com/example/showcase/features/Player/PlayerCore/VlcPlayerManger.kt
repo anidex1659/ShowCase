@@ -31,70 +31,36 @@ import org.videolan.libvlc.MediaPlayer
 import android.os.ParcelFileDescriptor
 import android.view.Surface
 import android.view.TextureView
+import com.example.showcase.core.SettingesManger.SettingsManager
 import java.io.File
 
 
 class VlcPlayerManager(
 	context: Context
 ) {
-
 	companion object {
-
 		private const val TAG = "Anidex_VLC"
-
 		private const val UPDATE_INTERVAL = 500L
-
-		private const val SEEK_AMOUNT = 10_000L
+		 val SEEK_AMOUNT = SettingsManager.seekAmount
 	}
 
 
 	private var currentPfd: ParcelFileDescriptor? = null
-
-
-	// ---------------------------------------------------------
-	// CONTEXT
-	// ---------------------------------------------------------
-
 	private val appContext = context.applicationContext
-
-
-	// ---------------------------------------------------------
-	// LIBVLC
-	// ---------------------------------------------------------
-
 	val libVLC = LibVLC(
 		appContext, arrayListOf(
 			"--audio-time-stretch", "--network-caching=150"
 		)
 	)
 
-
-	// ---------------------------------------------------------
-	// VLC PLAYER
-	// ---------------------------------------------------------
-
 	val player = MediaPlayer(
 		libVLC
 	)
 
-
-	// ---------------------------------------------------------
-	// COROUTINE
-	// ---------------------------------------------------------
-
 	private val scope = CoroutineScope(
 		Dispatchers.Main + SupervisorJob()
 	)
-
-
 	private var progressJob: Job? = null
-
-
-	// ---------------------------------------------------------
-	// PLAYER STATE
-	// Same state used by ExoPlayer
-	// ---------------------------------------------------------
-
 	private val _playerState = MutableStateFlow(
 		PlayerState()
 	)
@@ -102,30 +68,11 @@ class VlcPlayerManager(
 
 	val playerState: StateFlow<PlayerState> = _playerState.asStateFlow()
 
-
-	// ---------------------------------------------------------
-	// CALLBACKS
-	// Same callbacks used by ExoPlayer
-	// ---------------------------------------------------------
-
 	var onPlaybackEnded: (() -> Unit)? = null
-
 	var onProgress: ((PlayerState) -> Unit)? = null
-
-
-	// ---------------------------------------------------------
-	// CURRENT MEDIA
-	// ---------------------------------------------------------
-
 	private var currentMedia: Media? = null
-
-
 	private var surfaceView: SurfaceView? = null
 
-
-	// ---------------------------------------------------------
-	// INIT
-	// ---------------------------------------------------------
 
 	init {
 
@@ -137,10 +84,6 @@ class VlcPlayerManager(
 		}
 	}
 
-
-	// ---------------------------------------------------------
-	// VIDEO SURFACE
-	// ---------------------------------------------------------
 	private var textureView: TextureView? = null
 	private var textureSurface: Surface? = null
 

@@ -1,4 +1,4 @@
-package com.example.showcase.features.MediaPages
+package com.example.showcase.features.MediaPages.ui
 
 import android.app.Activity
 import androidx.compose.animation.AnimatedVisibility
@@ -70,10 +70,14 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.showcase.core.progresmanager.ProgressManager
-import com.example.showcase.features.HomeScreen.TopBar
+import com.example.showcase.features.HomeScreen.ui.TopBar
 import com.example.showcase.features.HomeScreen.repo.HomeRepository
 import com.example.showcase.features.InfoPage.repository.InfoRepository
 import com.example.showcase.features.Library.ui.Components.TypewriterText
+import com.example.showcase.features.MediaPages.MediaViewModel.MediaViewModelFactory
+import com.example.showcase.features.MediaPages.model.MediaCardUiModel
+import com.example.showcase.features.MediaPages.model.MediaType
+import com.example.showcase.features.MediaPages.MediaViewModel.MediaViewModel
 import com.example.showcase.features.MetaData.data.database.DatabaseProvider
 import com.example.showcase.features.MetaData.data.repository.metadata.MetadataStorageRepository
 import com.example.showcase.features.MetaData.data.repository.metadata.movie.MovieRepository
@@ -125,7 +129,7 @@ fun MediaPage(navController: NavHostController,Show : String) {
     }
 
     val MediaViewModel: MediaViewModel = viewModel(
-        factory = MediaViewModelFactory(repository,Inforepository)
+        factory = MediaViewModelFactory(repository, Inforepository)
     )
     LaunchedEffect(Show) {
 

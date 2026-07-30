@@ -1,8 +1,8 @@
 package com.example.showcase.features.InfoPage.repository
 
 import android.util.Log
-import com.example.showcase.features.InfoPage.uistate.MovieInfoUiModel
-import com.example.showcase.features.InfoPage.uistate.SeriesInfoUiModel
+import com.example.showcase.features.InfoPage.model.MovieInfoUiModel
+import com.example.showcase.features.InfoPage.model.SeriesInfoUiModel
 import com.example.showcase.features.MetaData.data.database.dao.ShowcaseDao
 import com.example.showcase.features.MetaData.data.model.MovieMetadata
 import com.example.showcase.features.MetaData.data.model.SeriesMetadata

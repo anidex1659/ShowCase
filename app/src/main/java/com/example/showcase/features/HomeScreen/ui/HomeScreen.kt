@@ -1,4 +1,4 @@
-package com.example.showcase.features.HomeScreen
+package com.example.showcase.features.HomeScreen.ui
 
 import android.app.Activity
 import androidx.compose.animation.AnimatedContent
@@ -65,7 +65,7 @@ import com.example.showcase.features.Player.PlayerViewModel.PlayerViewModel
 import com.example.showcase.features.Player.model.storage.MetadataJsonManager
 import com.example.showcase.features.Player.model.storage.MovieMetadataJsonManager
 import com.example.showcase.features.Player.PlayerCore.repository.PlayerRepository
-import com.example.showcase.features.SplashScreen.SplashScreenImg
+import com.example.showcase.features.SplashScreen.ui.SplashScreenImg
 import com.example.showcase.ui.navigation.LibraryRoute
 import com.example.showcase.ui.navigation.PlayerGraph
 import com.example.showcase.ui.theme.VMocha
@@ -283,9 +283,9 @@ import kotlinx.coroutines.delay
                 )
                 {
                     Spacer(modifier = Modifier.height(40.dp))
-                    HeroCarousel(
-                        featured = uiState.hero, navController = navController,
-                    )
+					HeroCarousel(
+						featured = uiState.hero, navController = navController,
+					)
                     Spacer(modifier = Modifier.height(10.dp))
 
                     Column() {
@@ -293,22 +293,22 @@ import kotlinx.coroutines.delay
                         //^^contnuew button
 
                         Spacer(modifier = Modifier.height(10.dp))
-                        Panel(
-                            modifier =
-                                Modifier
-                                    .weight(1f)
-                                    .fillMaxHeight()
-                                    .fillMaxWidth()
-                                    .clip(
-                                        RoundedCornerShape(
-                                            topStart = 20.dp,
-                                            topEnd = 20.dp
-                                        )
-                                    )
-                                    .background(color = VMocha.Mantle.copy(0.8f)),
-                            uiState = uiState,
-                            navController, progress, playerViewModel
-                        )
+						Panel(
+							modifier =
+								Modifier
+									.weight(1f)
+									.fillMaxHeight()
+									.fillMaxWidth()
+									.clip(
+										RoundedCornerShape(
+											topStart = 20.dp,
+											topEnd = 20.dp
+										)
+									)
+									.background(color = VMocha.Mantle.copy(0.8f)),
+							uiState = uiState,
+							navController, progress, playerViewModel
+						)
 
                     }
 

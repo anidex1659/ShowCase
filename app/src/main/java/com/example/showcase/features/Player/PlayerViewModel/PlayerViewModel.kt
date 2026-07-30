@@ -1,10 +1,13 @@
 package com.example.showcase.features.Player.PlayerViewModel
 
 import android.util.Log
+import androidx.compose.runtime.getValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
-import com.example.showcase.features.InfoPage.uistate.MovieInfoUiModel
-import com.example.showcase.features.InfoPage.uistate.SeriesInfoUiModel
+import com.example.showcase.core.SettingesManger.SettingsManager
+import com.example.showcase.features.InfoPage.model.MovieInfoUiModel
+import com.example.showcase.features.InfoPage.model.SeriesInfoUiModel
 import com.example.showcase.features.Player.PlayerCore.PlayerManager
 import com.example.showcase.features.Player.PlayerCore.VlcPlayerManager
 import com.example.showcase.features.Player.model.AudioTrack
@@ -40,13 +43,8 @@ class PlayerViewModel(
 
 ) : ViewModel() {
 
-
-    // =========================================================
-    // PLAYER ENGINE
-    // =========================================================
-
     private val _playerEngine =
-        MutableStateFlow(PlayerEngine.EXO)
+        MutableStateFlow(SettingsManager.playerEngine)
 
     val playerEngine =
         _playerEngine.asStateFlow()
@@ -87,8 +85,6 @@ class PlayerViewModel(
             "Player engine changed to $engine"
         )
     }
-
-
     fun togglePlayerEngine() {
 
         _playerEngine.value =
@@ -152,8 +148,7 @@ class PlayerViewModel(
                 repository.savePlayback(
                     manager.playerState.value
                 )
-
-                playNextEpisode()
+                if (SettingsManager.autoPlayNextEpisode) playNextEpisode()
             }
         }
 

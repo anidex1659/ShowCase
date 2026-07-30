@@ -1,4 +1,4 @@
-package com.example.showcase.features.HomeScreen.uistate
+package com.example.showcase.features.HomeScreen.model
 
 import com.example.showcase.features.MetaData.data.model.MovieUiModel
 import com.example.showcase.features.MetaData.data.model.SeriesUiModel

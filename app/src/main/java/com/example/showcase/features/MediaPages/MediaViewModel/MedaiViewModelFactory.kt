@@ -1,10 +1,11 @@
-package com.example.showcase.features.MediaPages
+package com.example.showcase.features.MediaPages.MediaViewModel
 
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.showcase.features.HomeScreen.repo.HomeRepository
 import com.example.showcase.features.InfoPage.repository.InfoRepository
+import com.example.showcase.features.MediaPages.MediaViewModel.MediaViewModel
 
 class MediaViewModelFactory(
     private val homeRepository: HomeRepository,
@@ -17,9 +18,9 @@ class MediaViewModelFactory(
         if (modelClass.isAssignableFrom(MediaViewModel::class.java)) {
 
             return MediaViewModel(
-                homeRepository = homeRepository,
-                infoRepository = infoRepository
-            ) as T
+				homeRepository = homeRepository,
+				infoRepository = infoRepository
+			) as T
         }
 
         throw IllegalArgumentException(

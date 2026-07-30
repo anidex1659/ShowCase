@@ -1,10 +1,12 @@
-package com.example.showcase.features.MediaPages
-
+package com.example.showcase.features.MediaPages.MediaViewModel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.showcase.features.HomeScreen.repo.HomeRepository
 import com.example.showcase.features.InfoPage.repository.InfoRepository
+import com.example.showcase.features.MediaPages.model.MediaType
+import com.example.showcase.features.MediaPages.model.MediaUiState
+import com.example.showcase.features.MediaPages.model.toMediaCard
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -12,9 +14,9 @@ import kotlinx.coroutines.launch
 
 class MediaViewModel(
 
-    private val homeRepository: HomeRepository,
+	private val homeRepository: HomeRepository,
 
-    private val infoRepository: InfoRepository
+	private val infoRepository: InfoRepository
 
 ) : ViewModel() {
 

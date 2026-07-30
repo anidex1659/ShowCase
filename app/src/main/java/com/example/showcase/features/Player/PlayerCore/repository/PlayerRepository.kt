@@ -1,9 +1,8 @@
 package com.example.showcase.features.Player.PlayerCore.repository
 
-import android.content.Context
 import android.util.Log
-import com.example.showcase.features.InfoPage.uistate.MovieInfoUiModel
-import com.example.showcase.features.InfoPage.uistate.SeriesInfoUiModel
+import com.example.showcase.features.InfoPage.model.MovieInfoUiModel
+import com.example.showcase.features.InfoPage.model.SeriesInfoUiModel
 import com.example.showcase.features.MetaData.data.database.dao.ShowcaseDao
 import com.example.showcase.features.MetaData.data.database.entity.movie.MoviePlaybackEntity
 import com.example.showcase.features.MetaData.data.database.entity.series.PlaybackHistoryEntity
@@ -16,8 +15,6 @@ import com.example.showcase.features.Player.model.MediaType
 import com.example.showcase.features.Player.model.PlayerMedia
 import com.example.showcase.features.Player.model.PlayerState
 import com.example.showcase.features.Player.model.SeriesPlaybackData
-import com.example.showcase.features.Player.model.storage.MetadataJsonManager
-import com.example.showcase.features.Player.model.storage.MovieMetadataJsonManager
 
 class PlayerRepository(
 

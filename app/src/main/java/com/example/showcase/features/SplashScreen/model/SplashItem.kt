@@ -4,7 +4,7 @@ package com.example.showcase.features.SplashScreen.model
 import androidx.annotation.DrawableRes
 import androidx.compose.ui.graphics.Color
 import com.example.showcase.R
-import com.example.showcase.ui.theme.VMocha
+import com.example.showcase.ui.Theme.VMocha
 
 data class SplashItem(
 

@@ -9,35 +9,20 @@ import com.example.showcase.core.SettingesManger.SettingsManager
 
 
 data class PlayerState(
-
     val media: PlayerMedia? = null,
-
     val playlist: List<PlayerMedia> = emptyList(),
-
     val currentIndex: Int = 0,
-
     val isPlaying: Boolean = false,
-
     val isBuffering: Boolean = false,
-
     val isEnded: Boolean = false,
-
     val currentPosition: Long = 0L,
-
     val duration: Long = 0L,
-
     val bufferedPosition: Long = 0L,
-
     val playbackSpeed: Float = 1f,
-
     val audioTracks: List<AudioTrack> = emptyList(),
-
     val subtitleTracks: List<SubtitleTrack> = emptyList(),
-
     val selectedAudioTrack: Int? = null,
-
     val selectedSubtitleTrack: Int? = null,
-
     val error: String? = null
 )
 

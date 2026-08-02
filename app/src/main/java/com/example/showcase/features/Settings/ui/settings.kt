@@ -1,15 +1,12 @@
 package com.example.showcase.features.Settings.ui
 
 import androidx.annotation.OptIn
-import androidx.asynclayoutinflater.R
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -30,7 +27,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -39,11 +35,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.util.UnstableApi
-import coil.compose.AsyncImage
 import com.example.showcase.features.Library.ui.Components.TypewriterText
-import com.example.showcase.features.Player.ui.PlayerSettings
-import com.example.showcase.ui.theme.VMocha
-import com.example.showcase.ui.theme.VMocha.Text
+import com.example.showcase.ui.Theme.VMocha
 
 @OptIn(UnstableApi::class)
 @Preview(

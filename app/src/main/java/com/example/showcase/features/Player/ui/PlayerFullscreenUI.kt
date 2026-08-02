@@ -2,6 +2,8 @@ package com.example.showcase.features.Player.ui
 
 import android.app.Activity
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -24,6 +26,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -65,8 +68,8 @@ import com.example.showcase.features.Player.model.MediaType
 import com.example.showcase.features.Player.model.PlayerInfoState
 import com.example.showcase.features.Player.model.PlayerMedia
 import com.example.showcase.features.Player.model.PlayerState
-import com.example.showcase.ui.navigation.PlayerGraph
-import com.example.showcase.ui.theme.VMocha
+import com.example.showcase.ui.Navigation.PlayerGraph
+import com.example.showcase.ui.Theme.VMocha
 import kotlinx.coroutines.delay
 
 
@@ -282,6 +285,10 @@ fun TopControllsV(
         mutableStateOf(false)
     }
 
+    var settingDilog by remember < MutableState<Boolean>>{
+        mutableStateOf(false)
+    }
+
     var EPDilog by remember<MutableState<Boolean>> {
         mutableStateOf(false)
     }
@@ -311,6 +318,16 @@ fun TopControllsV(
                     .padding(top = 20.dp, start = 5.dp, end = 5.dp))
 
         }
+        AnimatedVisibility(settingDilog) {
+            PlayerSettings(
+                {
+                    settingDilog=false
+                    playerViewModel.play()
+                }
+            )
+        }
+
+
 
         Row(Modifier.fillMaxWidth()) {
             IconButton(onClick = { playerViewModel.toggleFullscreen() }) {
@@ -359,6 +376,18 @@ fun TopControllsV(
         Column (
             Modifier.align(Alignment.CenterStart),
         ) {
+            IconButton(
+                onClick = {
+                    settingDilog= true
+                    playerViewModel.pause()
+                }
+            ) {
+                Icon(
+                    Icons.Default.Settings,
+                    contentDescription = null,
+                    tint = VMocha.Text
+                )
+            }
 
             IconButton(
                 onClick = {
@@ -477,9 +506,6 @@ fun TopControllsV(
                 if (vlcractio == PlayerManager.VideoResizeMode.ZOOM) {SizeModeColor = VMocha.Lavender}
                 if (vlcractio == PlayerManager.VideoResizeMode.STRETCH) {SizeModeColor = VMocha.Green}
             }
-
-
-
             IconButton(
 
                 onClick = {
@@ -518,13 +544,15 @@ fun CenterControlls(
     playerEngine: PlayerEngine
 ) {
 
+    val space by animateDpAsState(
+        targetValue = if (!state.isPlaying) 5.dp else 20.dp,
+        tween (1000)
+    )
 
     Row(
         modifier = modifier,
-        horizontalArrangement = Arrangement.Center
+        horizontalArrangement = Arrangement.spacedBy(space)
     ) {
-
-
         IconButton(
             //10sec <<
             onClick = {
@@ -542,8 +570,6 @@ fun CenterControlls(
                 modifier = Modifier.scale(0.8f)
             )
         }
-
-
         IconButton(
             //last ep
             onClick = {playerViewModel.playPreviousEpisode()},
@@ -657,7 +683,6 @@ fun BootomControlls(
             SeekBar(
                 progress,
                 onProgressChanged = { newProgress ->
-                    // Optional: update preview position
                 },
                 onSeekFinished = { finalProgress ->
 
@@ -669,20 +694,26 @@ fun BootomControlls(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(0.9f)
-                    .height(10.dp)
+                    .height(20.dp)
+                    .padding(horizontal = 5.dp)
                     .background(
                         VMocha.Surface1, RoundedCornerShape(20.dp)
                     )
             )
-            Row(
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth(),
-                verticalAlignment = Alignment.Bottom
-                //.padding(vertical = 5.dp, horizontal = 10.dp)
+                    .fillMaxWidth().padding(start = 5.dp, end = 5.dp)
             ) {
                 Text(
-                    formatTime(state.currentPosition)+" / "+formatTime(state.duration),
-                    modifier = Modifier.padding(start = 5.dp, end = 5.dp),
+                    formatTime(state.currentPosition),
+                    modifier = Modifier.padding(start = 5.dp, end = 5.dp).align(Alignment.CenterStart),
+                    color = VMocha.Text,
+                    textAlign = TextAlign.Start
+                )
+
+                Text(
+                    formatTime(state.duration),
+                    modifier = Modifier.padding(start = 5.dp, end = 5.dp).align(Alignment.CenterEnd),
                     color = VMocha.Text,
                     textAlign = TextAlign.End
                 )
@@ -731,7 +762,7 @@ private fun Epdilog(
         {
             Box(modifier = m)
             {
-                Column() {
+                Column{
                     Text(
                         text = metadata.movie?.metadata?.tagline?:"",
                         fontSize = 20.sp,
@@ -766,8 +797,8 @@ private fun Epdilog(
                                 .align(Alignment.Center),
                             thickness = 1.dp,
                             color = VMocha.Text
-                        )}
-
+                        )
+                    }
                     Text(
                         text = metadata.movie?.metadata?.genres?.joinToString (" | ").toString() 	,
                         fontSize = 18.sp,
@@ -781,12 +812,10 @@ private fun Epdilog(
                         color = VMocha.Text,
                         style = TextStyle(
                             lineHeight = 17.sp
-                        )
-                    )
-                }
-            }
-        }
-
-    }
-}
-
+                        )//--|
+                    )//------|
+                }//----------|
+            }//--------------|
+        }//------------------|
+    }//----------------------|
+}//--------------------------|

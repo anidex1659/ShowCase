@@ -1,0 +1,21 @@
+package com.example.showcase.ui.Popup
+
+sealed class GlobalDialog {
+
+    data class EditArtwork(
+        val seriesId: Long
+    ) : GlobalDialog()
+
+    data class EditMovieArtwork(
+        val movieId: Long
+    ) : GlobalDialog()
+    data class EditSeriesMetadata(
+        val seriesId: Long
+    ) : GlobalDialog()
+
+    data class IdentifySeries(
+        val seriesId: Long
+    ) : GlobalDialog()
+
+    object None : GlobalDialog()
+}

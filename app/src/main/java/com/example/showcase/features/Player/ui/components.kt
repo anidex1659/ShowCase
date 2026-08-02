@@ -20,8 +20,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.ArrowForwardIos
-import androidx.compose.material.icons.filled.ExposureNeg1
-import androidx.compose.material.icons.filled.ExposurePlus1
 import androidx.compose.material.icons.filled.FitScreen
 import androidx.compose.material.icons.filled.KeyboardDoubleArrowLeft
 import androidx.compose.material.icons.filled.KeyboardDoubleArrowRight
@@ -41,24 +39,19 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import coil.compose.AsyncImage
-import com.example.showcase.R
 import com.example.showcase.features.Library.ui.Components.TypewriterText
 import com.example.showcase.features.Player.PlayerCore.PlayerManager
 import com.example.showcase.features.Player.PlayerViewModel.PlayerEngine
@@ -66,35 +59,16 @@ import com.example.showcase.features.Player.PlayerViewModel.PlayerViewModel
 import com.example.showcase.features.Player.model.MediaType
 import com.example.showcase.features.Player.model.PlayerInfoState
 import com.example.showcase.features.Player.model.PlayerState
-import com.example.showcase.ui.navigation.PlayerGraph
-import com.example.showcase.ui.theme.VMocha
+import com.example.showcase.ui.Navigation.PlayerGraph
+import com.example.showcase.ui.Theme.VMocha
 import android.content.pm.ActivityInfo
-import android.widget.ToggleButton
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.magnifier
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderColors
-import androidx.compose.material3.SliderDefaults
-import androidx.compose.material3.SliderState
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchColors
-import androidx.compose.material3.SwitchDefaults
-import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.blur
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.DefaultShadowColor
-import androidx.compose.ui.platform.LocalContext
 import com.example.showcase.features.Settings.ui.CaptionSetting
-import kotlin.math.roundToInt
-import kotlin.math.roundToLong
+import com.example.showcase.features.Settings.ui.Playback
 
 @Composable
 fun SubtitleTrackSheet(
@@ -516,24 +490,42 @@ fun MidenControls(
 	}
 }
 
-@Preview(showBackground = true, showSystemUi = true)
+//@Preview(device = "spec:parent=pixel_5,orientation=landscape", showBackground = true, showSystemUi = true)
 @Composable
-fun PlayerSettings() {
+fun PlayerSettings(onDismiss: () -> Unit) {
 
-	Dialog({}) {
+	Dialog(onDismissRequest = onDismiss) {
 		Card(
 			Modifier
-				.size(500.dp)
+				.fillMaxHeight(0.9f)
 				.background(VMocha.Crust, RoundedCornerShape(20.dp))
 		)
 		{
-			LazyColumn(
+			Column(
 				Modifier
 					.fillMaxSize()
 					.background(VMocha.Crust, RoundedCornerShape(20.dp))
 			) {
-				item {
-					CaptionSetting()
+				Box(modifier = Modifier.fillMaxWidth()) {
+					IconButton({}, Modifier.align(Alignment.CenterEnd)) {
+						Icon(
+							Icons.Default.Close,
+							"",
+							tint = VMocha.Red
+						)
+					}
+				}
+				LazyColumn(
+				) {
+					item {
+						Playback()
+					}
+					item {
+						Divider(thickness = 2.dp, color = VMocha.Subtext0.copy(0.5f))
+					}
+					item {
+						CaptionSetting()
+					}
 				}
 			}
 		}
@@ -600,7 +592,8 @@ fun AutoRotationToggleButton(
 
 		Icon(
 			imageVector = icon,
-			contentDescription = "Toggle Rotation Lock"
+			contentDescription = "Toggle Rotation Lock",
+			tint = VMocha.Text
 		)
 	}
 }

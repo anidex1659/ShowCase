@@ -12,18 +12,13 @@ import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import com.example.showcase.features.Player.PlayerCore.PlayerManager
 import android.graphics.Color
-import android.view.SurfaceView
 import android.view.TextureView
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.media3.ui.CaptionStyleCompat
 import com.example.showcase.features.Player.PlayerCore.VlcPlayerManager
-import com.example.showcase.ui.theme.VMocha
 
 @OptIn(UnstableApi::class)
 @Composable

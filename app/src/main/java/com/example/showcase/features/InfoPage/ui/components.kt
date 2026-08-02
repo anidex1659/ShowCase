@@ -43,7 +43,7 @@ import coil.compose.AsyncImage
 import com.example.showcase.R
 import com.example.showcase.features.MetaData.data.model.MovieUiModel
 import com.example.showcase.features.MetaData.data.model.SeriesUiModel
-import com.example.showcase.ui.theme.VMocha
+import com.example.showcase.ui.Theme.VMocha
 
 @Preview(showBackground = true)
 @Composable

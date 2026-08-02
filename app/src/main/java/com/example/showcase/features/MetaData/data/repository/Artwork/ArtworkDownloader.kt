@@ -7,12 +7,11 @@ import androidx.core.graphics.drawable.toBitmap
 import coil.ImageLoader
 import coil.request.ImageRequest
 import coil.request.SuccessResult
-import com.example.showcase.core.progresmanager.ProgressManager
+import com.example.showcase.core.ProgressManager.ProgressManager
 import com.example.showcase.features.MetaData.data.database.dao.ShowcaseDao
 import com.example.showcase.features.MetaData.data.database.entity.movie.MovieArtworkEntity
 import com.example.showcase.features.MetaData.data.database.entity.series.ArtworkEntity
 import com.example.showcase.features.Player.model.storage.ArtworkStorageManager
-import com.google.common.collect.Multimaps.index
 
 class ArtworkDownloader(
 

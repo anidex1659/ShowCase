@@ -16,6 +16,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -41,6 +42,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
@@ -55,8 +57,8 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
-import com.example.showcase.core.progresmanager.ProgressManager
-import com.example.showcase.core.progresmanager.ScanProgress
+import com.example.showcase.core.ProgressManager.ProgressManager
+import com.example.showcase.core.ProgressManager.ScanProgress
 import com.example.showcase.features.HomeScreen.ui.BootomBAR
 import com.example.showcase.features.InfoPage.repository.InfoRepository
 import com.example.showcase.features.InfoPage.model.MovieInfoUiModel
@@ -73,10 +75,10 @@ import com.example.showcase.features.Player.model.storage.MovieMetadataJsonManag
 import com.example.showcase.features.Player.PlayerViewModel.PlayerViewModel
 import com.example.showcase.features.Player.PlayerCore.repository.PlayerRepository
 import com.example.showcase.features.SplashScreen.ui.SplashScreenImg
-import com.example.showcase.ui.navigation.PlayerGraph
-import com.example.showcase.ui.navigation.PlayerRoute
-import com.example.showcase.ui.navigation.PlayerType
-import com.example.showcase.ui.theme.VMocha
+import com.example.showcase.ui.Navigation.PlayerGraph
+import com.example.showcase.ui.Navigation.PlayerRoute
+import com.example.showcase.ui.Navigation.PlayerType
+import com.example.showcase.ui.Theme.VMocha
 import kotlinx.coroutines.delay
 
 
@@ -238,8 +240,8 @@ fun HeroCard(
 
 			//border = BorderStroke(width = 5.dp, color = VMocha.Blue),
 			modifier = Modifier
-                .padding(20.dp, 10.dp, 20.dp, 0.dp)
-                .height(500.dp)
+				.padding(20.dp, 10.dp, 20.dp, 0.dp)
+				.height(500.dp)
 		) {
 			Box(
 				modifier = Modifier.fillMaxSize()
@@ -248,8 +250,8 @@ fun HeroCard(
 					shape = RoundedCornerShape(10, 20, 10, 20),
 					border = BorderStroke(width = 1.dp, color = VMocha.Lavender),
 					modifier = Modifier
-                        .padding(0.dp, 0.dp, 0.dp, 30.dp)
-                        .fillMaxSize()
+						.padding(0.dp, 0.dp, 0.dp, 30.dp)
+						.fillMaxSize()
 				) {
 					AsyncImage(
 						model = poster,//poster image tobe changed
@@ -263,12 +265,12 @@ fun HeroCard(
 
 				Box(
 					modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .height(40.dp)
-                        .width(80.dp)
-                        .background(
-                            VMocha.Mantle, RoundedCornerShape(0, 50, 0, 50)
-                        )
+						.align(Alignment.TopEnd)
+						.height(40.dp)
+						.width(80.dp)
+						.background(
+							VMocha.Mantle, RoundedCornerShape(0, 50, 0, 50)
+						)
 				) {
 
 					Text(
@@ -278,19 +280,19 @@ fun HeroCard(
 						fontSize = 20.sp,
 						textAlign = TextAlign.Center,
 						modifier = Modifier
-                            .fillMaxSize()
-                            .padding(vertical = 5.dp)
+							.fillMaxSize()
+							.padding(vertical = 5.dp)
 					)
 				}
 
 
 				Box(
 					modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .size(120.dp)
-                        .background(
-                            VMocha.Mantle, RoundedCornerShape(100)
-                        )
+						.align(Alignment.BottomStart)
+						.size(120.dp)
+						.background(
+							VMocha.Mantle, RoundedCornerShape(100)
+						)
 				) {
 					IconButton(
 						modifier = Modifier.fillMaxSize(), onClick = onplay
@@ -301,11 +303,11 @@ fun HeroCard(
 							null,
 							tint = VMocha.Text,
 							modifier = Modifier
-                                .fillMaxSize()
-                                .padding(20.dp)
-                                .graphicsLayer(
-                                    scaleX = playScale * scale, scaleY = playScale * scale
-                                )
+								.fillMaxSize()
+								.padding(20.dp)
+								.graphicsLayer(
+									scaleX = playScale * scale, scaleY = playScale * scale
+								)
 						)
 					}
 				}
@@ -320,9 +322,9 @@ fun HeroCard(
 			contentDescription = "Series Logo",
 			alignment = Alignment.Center,
 			modifier = Modifier
-                .fillMaxWidth()
-                .height(60.dp)
-                .padding(horizontal = 10.dp),
+				.fillMaxWidth()
+				.height(60.dp)
+				.padding(horizontal = 10.dp),
 			contentScale = ContentScale.Fit
 		)
 
@@ -345,10 +347,10 @@ private fun InfoPanel(
 	Column {
 		LazyColumn(
 			modifier = Modifier
-                .height(250.dp)
-                //.fillMaxHeight()
+				.height(250.dp)
+				//.fillMaxHeight()
 				.background(VMocha.Mantle, RoundedCornerShape(10, 10, 10, 10))
-                .border(1.dp, VMocha.Lavender, RoundedCornerShape(10, 10, 10, 10))
+				.border(1.dp, VMocha.Lavender, RoundedCornerShape(10, 10, 10, 10))
 		) {
 			item {
 				TypewriterText(
@@ -368,8 +370,8 @@ private fun InfoPanel(
 					lineHeight = 24.sp,
 					fontSize = 16.sp,
 					modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp)
+						.fillMaxWidth()
+						.padding(horizontal = 12.dp)
 				)
 				Spacer(modifier = Modifier.padding(5.dp))
 			}
@@ -381,8 +383,8 @@ private fun InfoPanel(
 					lineHeight = 24.sp,
 					fontSize = 16.sp,
 					modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp)
+						.fillMaxWidth()
+						.padding(horizontal = 12.dp)
 				)
 			}
 		}
@@ -399,36 +401,41 @@ fun SeriesInfoContent(
 	progress: ScanProgress
 ) {
 	Box(modifier = Modifier.fillMaxSize()) {
+		Column(Modifier.fillMaxSize()) {
+			Column(
+				modifier = Modifier
+					.background(VMocha.Crust)
+					.fillMaxWidth()
+					.fillMaxHeight(0.95f)
+			) {
 
-		Column(
-			modifier = Modifier
-                .background(VMocha.Crust)
-                .fillMaxSize()
-		) {
+				Spacer(modifier = Modifier.padding(25.dp))
 
-			Spacer(modifier = Modifier.padding(25.dp))
-
-			HeroCard(
-				rating = series.metadata?.rating?.toString() ?: "--",
-				poster = series.media.poster?.uri,
-				logo = series.media.logo?.uri, onplay = {
-					navController.navigate(
-						PlayerRoute(
-							series.media.series.id, type = PlayerType.SERIES
+				HeroCard(
+					rating = series.metadata?.rating?.toString() ?: "--",
+					poster = series.media.poster?.uri,
+					logo = series.media.logo?.uri, onplay = {
+						navController.navigate(
+							PlayerRoute(
+								series.media.series.id, type = PlayerType.SERIES
+							)
 						)
-					)
-				})
+					})
 
-			Spacer(modifier = Modifier.padding(10.dp))
+				Spacer(modifier = Modifier.padding(10.dp))
 
-			InfoPanel(
-				genres = series.metadata?.genres ?: emptyList(),
-				plot = series.metadata?.plot ?: "",
-				year = series.metadata?.year ?: 0,
-				status = series.metadata?.status ?: "", navController, progress
+				InfoPanel(
+					genres = series.metadata?.genres ?: emptyList(),
+					plot = series.metadata?.plot ?: "",
+					year = series.metadata?.year ?: 0,
+					status = series.metadata?.status ?: "", navController, progress
+				)
+
+			}
+			BootomBAR(
+				navController, progress, Modifier
+					.fillMaxWidth()
 			)
-
-
 		}
 	}
 }
@@ -441,36 +448,41 @@ fun MovieInfoContent(
 	navController: NavHostController,
 	progress: ScanProgress
 ) {
-
-	Column(
-		modifier = Modifier
-            .background(VMocha.Crust)
-            .fillMaxSize()
-	) {
-
-		TypewriterText(
-			movie.metadata?.tagline ?: "",
+	Column(	Modifier.fillMaxSize()) {
+		Column(
 			modifier = Modifier
-                .padding(top = 40.dp)
-                .fillMaxWidth(),
-			textAlign = TextAlign.Center,
-			fontSize = 20.sp,
-			color = VMocha.Text
-		)
+				.background(VMocha.Crust)
+				.fillMaxWidth()
+				.fillMaxHeight(0.95f)
+		) {
 
-		HeroCard(
-			rating = movie.metadata?.rating?.toString() ?: "--",
-			poster = movie.movie.artwork.firstOrNull {
-				it.type == "poster"
-			}?.uri,
-			logo = movie.movie.artwork.firstOrNull {
-				it.type == "logo"
-			}?.uri,
-			{
-				navController.navigate(PlayerRoute(movie.movie.movie.id, type = PlayerType.MOVIE))
-			})
+			TypewriterText(
+				movie.metadata?.tagline ?: "",
+				modifier = Modifier
+					.padding(top = 40.dp)
+					.fillMaxWidth(),
+				textAlign = TextAlign.Center,
+				fontSize = 20.sp,
+				color = VMocha.Text
+			)
 
-		Box() {
+			HeroCard(
+				rating = movie.metadata?.rating?.toString() ?: "--",
+				poster = movie.movie.artwork.firstOrNull {
+					it.type == "poster"
+				}?.uri,
+				logo = movie.movie.artwork.firstOrNull {
+					it.type == "logo"
+				}?.uri,
+				{
+					navController.navigate(
+						PlayerRoute(
+							movie.movie.movie.id,
+							type = PlayerType.MOVIE
+						)
+					)
+				})
+
 			InfoPanel(
 				genres = movie.metadata?.genres ?: emptyList(),
 				plot = movie.metadata?.plot ?: "",
@@ -479,11 +491,12 @@ fun MovieInfoContent(
 				navController = navController,
 				progress = progress
 			)
-			BootomBAR(
-				navController, progress, Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-			)
+
 		}
+
+		BootomBAR(
+			navController, progress, Modifier
+				.fillMaxWidth()
+		)
 	}
 }

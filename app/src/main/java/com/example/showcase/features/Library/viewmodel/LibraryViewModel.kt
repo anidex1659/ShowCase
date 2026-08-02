@@ -3,7 +3,7 @@ package com.example.showcase.features.Library.viewmodel
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.showcase.core.progresmanager.ProgressManager
+import com.example.showcase.core.ProgressManager.ProgressManager
 import com.example.showcase.features.Library.state.LibraryUiState
 import com.example.showcase.features.Library.repository.LibraryRepository
 

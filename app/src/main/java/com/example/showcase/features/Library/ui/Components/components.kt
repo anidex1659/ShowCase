@@ -41,21 +41,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.showcase.core.progresmanager.ScanProgress
+import com.example.showcase.core.ProgressManager.ScanProgress
 import com.example.showcase.features.MetaData.data.model.LibraryUiModel
 import com.example.showcase.features.MetaData.data.model.SeasonUiModel
 import com.example.showcase.features.MetaData.data.model.SeriesUiModel
-import com.example.showcase.ui.popup.DialogManager
-import com.example.showcase.ui.popup.GlobalDialog
-import com.example.showcase.ui.theme.VMocha
+import com.example.showcase.ui.Popup.DialogManager
+import com.example.showcase.ui.Popup.GlobalDialog
+import com.example.showcase.ui.Theme.VMocha
 import com.example.showcase.features.MetaData.data.model.MovieUiModel
 import kotlinx.coroutines.delay
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.material3.Text
-import androidx.compose.runtime.*
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
 import androidx.compose.ui.graphics.Color
 
 //@Preview(showBackground = true, showSystemUi = true)

@@ -12,8 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.media3.common.util.UnstableApi
 import com.example.showcase.core.SettingesManger.SettingsManager
 import com.example.showcase.features.MetaData.data.database.DatabaseProvider
-import com.example.showcase.ui.navigation.AppNavGraph
-import com.example.showcase.ui.theme.ShowCaseTheme
+import com.example.showcase.ui.Navigation.AppNavGraph
+import com.example.showcase.ui.Theme.ShowCaseTheme
 
 
 class MainActivity : ComponentActivity() {

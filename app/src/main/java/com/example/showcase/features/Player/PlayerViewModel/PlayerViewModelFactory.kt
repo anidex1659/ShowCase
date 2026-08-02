@@ -2,7 +2,7 @@ package com.example.showcase.features.Player.PlayerViewModel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.showcase.ui.navigation.PlayerGraph
+import com.example.showcase.ui.Navigation.PlayerGraph
 
 class PlayerViewModelFactory : ViewModelProvider.Factory {
 

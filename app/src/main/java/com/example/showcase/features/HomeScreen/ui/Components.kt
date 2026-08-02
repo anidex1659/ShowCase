@@ -1,11 +1,17 @@
 package com.example.showcase.features.HomeScreen.ui
 
+import android.text.Layout
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandIn
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -29,7 +35,11 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.PauseCircle
+import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.SubdirectoryArrowRight
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material3.Card
@@ -38,33 +48,44 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.showcase.R
-import com.example.showcase.core.progresmanager.ScanProgress
+import com.example.showcase.core.ProgressManager.ProgressManager
+import com.example.showcase.core.ProgressManager.ProgressType
+import com.example.showcase.core.ProgressManager.ScanProgress
 import com.example.showcase.features.HomeScreen.model.HomeUiState
 import com.example.showcase.features.InfoPage.ui.MoviePosterCard2
 import com.example.showcase.features.InfoPage.ui.PosterCard2
 import com.example.showcase.features.MetaData.data.model.MovieUiModel
 import com.example.showcase.features.MetaData.data.model.SeriesUiModel
+import com.example.showcase.features.Player.PlayerCore.PlayerManager
 import com.example.showcase.features.Player.PlayerViewModel.PlayerViewModel
-import com.example.showcase.ui.navigation.HomeRoute
-import com.example.showcase.ui.navigation.LibraryRoute
-import com.example.showcase.ui.navigation.MediaRoute
-import com.example.showcase.ui.navigation.MovieInfoRoute
-import com.example.showcase.ui.navigation.PlayerRoute
-import com.example.showcase.ui.navigation.PlayerType
-import com.example.showcase.ui.navigation.SeriesInfoRoute
-import com.example.showcase.ui.theme.VMocha
+import com.example.showcase.features.Player.ui.VlcVideoPlayer
+import com.example.showcase.ui.Navigation.HomeRoute
+import com.example.showcase.ui.Navigation.LibraryRoute
+import com.example.showcase.ui.Navigation.MediaRoute
+import com.example.showcase.ui.Navigation.MovieInfoRoute
+import com.example.showcase.ui.Navigation.PlayerGraph
+import com.example.showcase.ui.Navigation.PlayerRoute
+import com.example.showcase.ui.Navigation.PlayerType
+import com.example.showcase.ui.Navigation.SeriesInfoRoute
+import com.example.showcase.ui.Theme.VMocha
 
 //@Preview
 @OptIn(ExperimentalFoundationApi::class)
@@ -144,52 +165,6 @@ fun HeroCard(
 
     }
 }
-
-@Preview(showBackground = true)
-@Composable
-fun PosterCard() {
-
-    Box(
-        modifier = Modifier
-            .width(150.dp)
-            .height(225.dp)
-            .clip(RoundedCornerShape(18.dp, 18.dp, 18.dp, 18.dp))
-            .border(
-                2.dp,
-                VMocha.Blue.copy(alpha = 0.9f),
-                RoundedCornerShape(18.dp, 18.dp, 18.dp, 18.dp)
-            )
-    ) {
-
-        Image(
-            painter = painterResource(R.drawable.folder),
-            contentDescription = null,
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop
-        )
-        Box(
-            Modifier
-                .fillMaxWidth(0.8f)
-                .background(VMocha.Surface1, shape = RoundedCornerShape(0.dp, 18.dp, 18.dp, 0.dp))
-                .align(Alignment.BottomStart)
-                .border(
-                    1.dp,
-                    VMocha.Overlay0.copy(alpha = 0.9f),
-                    RoundedCornerShape(0.dp, 18.dp, 18.dp, 0.dp)
-                )
-        ) {
-
-            Text(
-                text = "First Love",
-                color = VMocha.Text,
-                modifier = Modifier
-                    .padding(12.dp)
-            )
-        }
-
-    }
-}
-
 @Composable
 fun PosterRow(
     series: List<SeriesUiModel>,
@@ -276,11 +251,11 @@ fun Panel(
                 modifier = modifier.fillMaxSize()
             ) {
 //            item {
-//                MediaSection("Continue Watching") {
+//                MediaSection("Continue Watching",{}) {
 //                    PosterRow(uiState.continueWatching)
 //                }
 //            }
-//
+
                 item {
                     MediaSection(
                         "Trending Series",
@@ -405,6 +380,93 @@ fun BootomBAR(
                 contentDescription = null, tint = VMocha.Text
             )
         }
+        var poster by remember { mutableStateOf(progress.playerState?.media?.backdrop) }
+        AnimatedVisibility(
+            visible = progress.visible && progress.type == ProgressType.PLAYING,
+            enter = expandIn(),
+            exit = fadeOut()
+        ) {
+          poster=progress.playerState?.media?.backdrop
+            Box(
+                Modifier
+                    .clip(RoundedCornerShape(10.dp))
+                    .padding(top = 1.dp, bottom = 1.dp)
+            ) {
+                AsyncImage(
+                    model = poster,
+                    contentDescription = "",
+                    Modifier.matchParentSize(),
+                    contentScale = ContentScale.Crop,
+                )
+                Box(
+                    Modifier
+                        .matchParentSize()
+                        .background(VMocha.Crust.copy(0.5f))
+                )
+                Text(
+                    progress.playerState?.media?.title?:"",
+                    fontSize = 10.sp,
+                    color = VMocha.Subtext0,
+                    modifier = modifier.align(Alignment.Center)
+                )
+
+                Row(
+                    modifier = Modifier
+                        .padding(start = 5.dp, end = 5.dp)
+                        .align(Alignment.Center)
+                ) {//mini player controllers
+                    IconButton(
+                        onClick = { navController.navigate(LibraryRoute) }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.SubdirectoryArrowRight,
+                            contentDescription = null,
+                            tint = VMocha.Text
+                        )
+                    }
+                    IconButton(
+                        onClick = {
+                            if (progress.playerState?.isPlaying?:true) {
+                                PlayerGraph.playerManager.pause()
+                                PlayerGraph.vlcPlayerManager.pause()
+
+                            }else{
+                                PlayerGraph.playerManager.play()
+                                PlayerGraph.vlcPlayerManager.play()
+                            }
+
+
+                        }
+                    ) {
+                        if (progress.playerState?.isPlaying ?: true)
+                            Icon(
+                                imageVector = Icons.Default.PauseCircle,
+                                contentDescription = null,
+                                tint = VMocha.Text
+                            )
+                        else
+                            Icon(
+                                imageVector = Icons.Default.PlayCircle,
+                                contentDescription = null,
+                                tint = VMocha.Text
+                            )
+
+                    }
+
+                    IconButton(
+                        onClick = { navController.navigate(LibraryRoute) }
+                    ) {
+
+                        Icon(
+                            imageVector = Icons.Default.Stop,
+                            contentDescription = null,
+                            tint = VMocha.Text
+                        )
+                    }
+                }
+            }
+        }
+
 
         Row {
 

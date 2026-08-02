@@ -1,7 +1,7 @@
 package com.example.showcase.features.MetaData.data.scanner.Scanners
 
 import android.util.Log
-import com.example.showcase.core.progresmanager.ProgressManager
+import com.example.showcase.core.ProgressManager.ProgressManager
 import com.example.showcase.features.MetaData.data.database.dao.ShowcaseDao
 import com.example.showcase.features.MetaData.data.database.entity.series.EpisodeEntity
 import com.example.showcase.features.MetaData.data.database.entity.series.SeriesEntity

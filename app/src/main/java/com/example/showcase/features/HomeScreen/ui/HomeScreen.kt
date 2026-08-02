@@ -53,7 +53,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
-import com.example.showcase.core.progresmanager.ProgressManager
+import com.example.showcase.core.ProgressManager.ProgressManager
 import com.example.showcase.features.HomeScreen.repo.HomeRepository
 import com.example.showcase.features.HomeScreen.viewmodel.HomeViewModel
 import com.example.showcase.features.HomeScreen.viewmodel.HomeViewModelFactory
@@ -66,9 +66,9 @@ import com.example.showcase.features.Player.model.storage.MetadataJsonManager
 import com.example.showcase.features.Player.model.storage.MovieMetadataJsonManager
 import com.example.showcase.features.Player.PlayerCore.repository.PlayerRepository
 import com.example.showcase.features.SplashScreen.ui.SplashScreenImg
-import com.example.showcase.ui.navigation.LibraryRoute
-import com.example.showcase.ui.navigation.PlayerGraph
-import com.example.showcase.ui.theme.VMocha
+import com.example.showcase.ui.Navigation.LibraryRoute
+import com.example.showcase.ui.Navigation.PlayerGraph
+import com.example.showcase.ui.Theme.VMocha
 import kotlinx.coroutines.delay
 
 

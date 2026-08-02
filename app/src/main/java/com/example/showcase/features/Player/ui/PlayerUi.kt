@@ -31,10 +31,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -65,7 +69,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
-import com.example.showcase.core.progresmanager.ProgressManager
+import com.example.showcase.core.ProgressManager.ProgressManager
 import com.example.showcase.features.HomeScreen.ui.BootomBAR
 import com.example.showcase.features.Player.PlayerCore.PlayerManager
 import com.example.showcase.features.Player.PlayerCore.VlcPlayerManager
@@ -77,9 +81,9 @@ import com.example.showcase.features.Player.model.TrackSheetType
 import com.example.showcase.features.Player.PlayerViewModel.PlayerViewModelFactory
 import com.example.showcase.features.Player.model.MediaType
 import com.example.showcase.features.Player.model.PlayerState
-import com.example.showcase.ui.navigation.PlayerGraph
-import com.example.showcase.ui.navigation.PlayerType
-import com.example.showcase.ui.theme.VMocha
+import com.example.showcase.ui.Navigation.PlayerGraph
+import com.example.showcase.ui.Navigation.PlayerType
+import com.example.showcase.ui.Theme.VMocha
 import kotlinx.coroutines.delay
 
 
@@ -357,7 +361,6 @@ fun Player(
             CenterControlls(
                  playerViewModel, state,
                 Modifier
-                    .fillMaxWidth()
                     .padding(bottom = 12.dp)
                     .align(Alignment.Center),
                 playerEngine
@@ -395,23 +398,47 @@ fun EpPanel(
     }
 
     if (state.media?.type == MediaType.EPISODE) {
-        LazyColumn(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight(hight)
                 .background(
                     VMocha.Crust, shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
                 )
-                .padding(top = 20.dp, start = 5.dp, end = 5.dp)
-        ) {
-
-            itemsIndexed(playlist) { index, media ->
-                EpCard(
-                    media = media, selected = index == currentIndex, onClick = {
-                        onEpisodeClick(index)
-                    })
+                .padding(top = 1.dp, start = 5.dp, end = 5.dp)
+            , horizontalAlignment = Alignment.CenterHorizontally
+        )
+        {
+            Row(
+                Modifier.fillMaxWidth().background(
+                    VMocha.Mantle, shape = RoundedCornerShape(20.dp)
+                ), verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    state.media.title + " | E" + state.media.episodeNumber,
+                    color = VMocha.Text
+                )
+                Box(Modifier.fillMaxWidth()) {
+                    IconButton(
+                        {}, Modifier.align(Alignment.CenterEnd)
+                    ) {
+                        Icon(
+                            Icons.Default.Sync,
+                            "Refresh Episodes"
+                        )
+                    }
+                }
             }
+            LazyColumn(Modifier.fillMaxWidth()) {
 
+                itemsIndexed(playlist) { index, media ->
+                    EpCard(
+                        media = media, selected = index == currentIndex, onClick = {
+                            onEpisodeClick(index)
+                        })
+                }
+
+            }
         }
     }
     else if (state.media?.type == MediaType.MOVIE)
@@ -537,19 +564,18 @@ fun EpCard(media: PlayerMedia, selected: Boolean, onClick: () -> Unit) {
                     media.plot,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Light,
-                    color = VMocha.Subtext1,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
+                    color = VMocha.Subtext0.copy(0.5f),
+                    style = TextStyle(
+                        lineHeight = 12.sp
+                    ),
+                    maxLines = 4,
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(top = 5.dp),
+                        .fillMaxSize(),
                     textAlign = TextAlign.Start
                 )
             }
-
         }
     }
-
 }
 
 

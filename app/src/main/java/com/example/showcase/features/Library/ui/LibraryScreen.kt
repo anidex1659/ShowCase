@@ -40,8 +40,8 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.showcase.core.progresmanager.ProgressManager
-import com.example.showcase.core.progresmanager.ScanProgress
+import com.example.showcase.core.ProgressManager.ProgressManager
+import com.example.showcase.core.ProgressManager.ScanProgress
 import com.example.showcase.features.Library.repository.LibraryRepository
 
 //import com.example.showcase.features.MetaData.data.repository.LibraryRepository
@@ -68,10 +68,10 @@ import com.example.showcase.features.Player.model.storage.ArtworkStorageManager
 import com.example.showcase.features.Player.model.storage.MetadataJsonManager
 import com.example.showcase.features.Player.model.storage.MovieMetadataJsonManager
 import com.example.showcase.features.SplashScreen.ui.LoadingPopup
-import com.example.showcase.ui.navigation.HomeRoute
-import com.example.showcase.ui.navigation.SettingsRoute
-import com.example.showcase.ui.popup.GlobalDialogHost
-import com.example.showcase.ui.theme.VMocha
+import com.example.showcase.ui.Navigation.HomeRoute
+import com.example.showcase.ui.Navigation.SettingsRoute
+import com.example.showcase.ui.Popup.GlobalDialogHost
+import com.example.showcase.ui.Theme.VMocha
 
 
 //@Preview(showSystemUi = true, showBackground = true)

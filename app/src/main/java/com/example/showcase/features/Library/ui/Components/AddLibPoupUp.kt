@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.showcase.features.MetaData.data.database.DatabaseProvider
 import com.example.showcase.features.MetaData.data.database.entity.LibraryEntity
-import com.example.showcase.ui.theme.VMocha
+import com.example.showcase.ui.Theme.VMocha
 import kotlinx.coroutines.launch
 
 @Composable

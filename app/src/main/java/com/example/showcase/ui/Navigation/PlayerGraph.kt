@@ -1,0 +1,38 @@
+package com.example.showcase.ui.Navigation
+
+import android.content.Context
+import com.example.showcase.features.Player.PlayerCore.PlayerManager
+import com.example.showcase.features.Player.PlayerCore.VlcPlayerManager
+import com.example.showcase.features.Player.PlayerCore.repository.PlayerRepository
+
+object PlayerGraph {
+
+    lateinit var playerManager: PlayerManager
+        private set
+
+    lateinit var vlcPlayerManager: VlcPlayerManager
+        private set
+
+    lateinit var repository: PlayerRepository
+        private set
+
+    fun initialize(
+        context: Context,
+        repository: PlayerRepository
+    ) {
+        if (::playerManager.isInitialized) return
+
+        playerManager =
+            PlayerManager(
+                context
+            )
+
+        vlcPlayerManager =
+            VlcPlayerManager(
+                context
+            )
+
+        this.repository =
+            repository
+    }
+}

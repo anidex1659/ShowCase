@@ -69,7 +69,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
-import com.example.showcase.core.progresmanager.ProgressManager
+import com.example.showcase.core.ProgressManager.ProgressManager
 import com.example.showcase.features.HomeScreen.ui.TopBar
 import com.example.showcase.features.HomeScreen.repo.HomeRepository
 import com.example.showcase.features.InfoPage.repository.InfoRepository
@@ -84,11 +84,11 @@ import com.example.showcase.features.MetaData.data.repository.metadata.movie.Mov
 import com.example.showcase.features.MetaData.data.repository.metadata.sires.SeriesRepository
 import com.example.showcase.features.Player.model.storage.MetadataJsonManager
 import com.example.showcase.features.Player.model.storage.MovieMetadataJsonManager
-import com.example.showcase.ui.navigation.MovieInfoRoute
-import com.example.showcase.ui.navigation.PlayerRoute
-import com.example.showcase.ui.navigation.PlayerType
-import com.example.showcase.ui.navigation.SeriesInfoRoute
-import com.example.showcase.ui.theme.VMocha
+import com.example.showcase.ui.Navigation.MovieInfoRoute
+import com.example.showcase.ui.Navigation.PlayerRoute
+import com.example.showcase.ui.Navigation.PlayerType
+import com.example.showcase.ui.Navigation.SeriesInfoRoute
+import com.example.showcase.ui.Theme.VMocha
 import kotlinx.coroutines.delay
 
 

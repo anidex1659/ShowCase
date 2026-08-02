@@ -38,8 +38,8 @@ import androidx.navigation.NavHostController
 import com.example.showcase.R
 import com.example.showcase.features.Library.ui.Components.TypewriterText
 import com.example.showcase.features.SplashScreen.model.splashItems
-import com.example.showcase.ui.navigation.HomeRoute
-import com.example.showcase.ui.theme.VMocha
+import com.example.showcase.ui.Navigation.HomeRoute
+import com.example.showcase.ui.Theme.VMocha
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 

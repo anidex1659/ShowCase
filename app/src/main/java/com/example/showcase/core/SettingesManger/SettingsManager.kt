@@ -1,14 +1,13 @@
 package com.example.showcase.core.SettingesManger
 
-import androidx.compose.ui.text.Paragraph
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.util.UnstableApi
 import com.example.showcase.features.MetaData.data.database.dao.SettingsDao
 import com.example.showcase.features.MetaData.data.database.entity.SettingsEntity
 import com.example.showcase.features.Player.PlayerViewModel.PlayerEngine
-import com.example.showcase.ui.theme.ShowcasePalette
-import com.example.showcase.ui.theme.Themes
+import com.example.showcase.ui.Theme.ShowcasePalette
+import com.example.showcase.ui.Theme.Themes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -16,7 +15,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlin.coroutines.EmptyCoroutineContext.get
 
 
 @UnstableApi

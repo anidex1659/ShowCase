@@ -1,11 +1,10 @@
 package com.example.showcase.features.Player.PlayerViewModel
 
 import android.util.Log
-import androidx.compose.runtime.getValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.example.showcase.core.SettingesManger.SettingsManager
+import com.example.showcase.core.ProgressManager.ProgressManager
 import com.example.showcase.features.InfoPage.model.MovieInfoUiModel
 import com.example.showcase.features.InfoPage.model.SeriesInfoUiModel
 import com.example.showcase.features.Player.PlayerCore.PlayerManager
@@ -131,9 +130,10 @@ class PlayerViewModel(
 
     init {
         manager.onProgress = { playerState ->
-
+            ProgressManager.updatePlayer(
+                playerState
+            )
             viewModelScope.launch {
-
                 repository.savePlayback(
                     playerState
                 )
@@ -142,7 +142,7 @@ class PlayerViewModel(
 
 
         manager.onPlaybackEnded = {
-
+            ProgressManager.hide()
             viewModelScope.launch {
 
                 repository.savePlayback(
@@ -154,7 +154,9 @@ class PlayerViewModel(
 
 
         vlcManager.onProgress = { playerState ->
-
+            ProgressManager.updatePlayer(
+                playerState
+            )
             viewModelScope.launch {
 
                 repository.savePlayback(
@@ -164,7 +166,7 @@ class PlayerViewModel(
         }
 
         vlcManager.onPlaybackEnded = {
-
+            ProgressManager.hide()
             viewModelScope.launch {
 
                 repository.savePlayback(

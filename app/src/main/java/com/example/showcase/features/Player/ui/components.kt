@@ -436,7 +436,6 @@ fun MidenControls(
 			}
 
 			IconButton(
-				//play pause
 				onClick = {
 					when (playerEngine) {
 						PlayerEngine.EXO -> PlayerGraph.playerManager.togglePlayPause()

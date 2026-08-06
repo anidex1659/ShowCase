@@ -1,6 +1,8 @@
 package com.example.showcase.features.Player.PlayerViewModel
 
 import android.util.Log
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.showcase.core.SettingesManger.SettingsManager
@@ -49,32 +51,11 @@ class PlayerViewModel(
         _playerEngine.asStateFlow()
 
     private fun fallbackToVlc() {
-
-        val exoState = manager.playerState.value
-
-        val playlist = exoState.playlist
-
-        val index = exoState.currentIndex
-
-        if (playlist.isEmpty()) return
-
-        val updatedPlaylist =
-            playlist.toMutableList()
-
-        updatedPlaylist[index] =
-            updatedPlaylist[index].copy(
-                resume = exoState.currentPosition
-            )
-
-        _playerEngine.value = PlayerEngine.VLC
-
-        vlcManager.loadPlaylist(
-            updatedPlaylist,
-            index
-        )
-
-        vlcManager.play()
+        if(_playerEngine.value == PlayerEngine.EXO){
+            switchToVlc()
+        }
     }
+
     fun setPlayerEngine(engine: PlayerEngine) {
 
         _playerEngine.value = engine
@@ -84,19 +65,98 @@ class PlayerViewModel(
             "Player engine changed to $engine"
         )
     }
-    fun togglePlayerEngine() {
 
-        _playerEngine.value =
-            when (_playerEngine.value) {
+    fun togglePlayerEngine(){
 
-                PlayerEngine.EXO ->
-                    PlayerEngine.VLC
-
-                PlayerEngine.VLC ->
-                    PlayerEngine.EXO
-            }
+        when(_playerEngine.value){
+            PlayerEngine.EXO -> switchToVlc()
+            PlayerEngine.VLC -> switchToExo()
+        }
     }
 
+    private fun switchToVlc(){
+
+        val state = manager.playerState.value
+        val media = state.media ?: return
+
+        if (_playerEngine.value == PlayerEngine.VLC)
+        {
+            Log.d("Anidex_vm","player engine is Already set to vlc")
+            return
+        }
+        manager.stop()
+
+        val updated = media.copy(
+            resume = state.currentPosition
+        )
+
+        _playerEngine.value = PlayerEngine.VLC
+
+        if(state.playlist.isEmpty()){
+
+            vlcManager.loadMedia(updated)
+
+        }else{
+
+            val playlist = state.playlist.toMutableList()
+
+            playlist[state.currentIndex] = updated
+
+            vlcManager.loadPlaylist(
+                playlist,
+                state.currentIndex
+            )
+        }
+
+        vlcManager.play()
+        Log.d(
+            "Anidex_PlayerVM",
+            "Player engine changed to VLC"
+        )
+    }
+
+
+    private fun switchToExo(){
+
+        val state = vlcManager.playerState.value
+
+        val media = state.media ?: return
+
+        if (_playerEngine.value == PlayerEngine.EXO)
+        {
+            Log.d("Anidex_vm","player engine is Already set to vlc")
+            return
+        }
+        vlcManager.stop()
+
+        val updated = media.copy(
+            resume = state.currentPosition
+        )
+
+        _playerEngine.value = PlayerEngine.EXO
+
+        if(state.playlist.isEmpty()){
+
+            manager.loadMedia(updated)
+
+        }else{
+
+            val playlist = state.playlist.toMutableList()
+
+            playlist[state.currentIndex] = updated
+
+            manager.loadPlaylist(
+                playlist,
+                state.currentIndex
+            )
+        }
+
+        manager.play()
+        Log.d(
+            "Anidex_PlayerVM",
+            "Player engine changed to EXO"
+        )
+    }
 
     private fun activeState() =
         when (_playerEngine.value) {
@@ -183,7 +243,7 @@ class PlayerViewModel(
             val media = playerState.media
 
             if (media != null) {
-
+                Log.d("Anidex_VM","Switching TO VLC")
                 fallbackToVlc()
             }
         }

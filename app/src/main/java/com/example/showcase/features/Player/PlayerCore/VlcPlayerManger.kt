@@ -205,16 +205,6 @@ class VlcPlayerManager(
 		if (vlcVout.areViewsAttached()) {
 			vlcVout.detachViews()
 		}
-
-//		textureView?.surfaceTextureListener =
-//			null
-//
-//		detachVlcSurface()
-//
-//		textureSurface?.release()
-//		textureSurface = null
-//
-//		textureView = null
 	}
 
 
@@ -1098,5 +1088,20 @@ class VlcPlayerManager(
 				uri
 			}
 		}
+	}
+
+	fun reset() {
+
+		progressJob?.cancel()
+
+		player.stop()
+
+		_audioTracks.value = emptyList()
+		_subtitleTracks.value = emptyList()
+
+		_playerState.value = PlayerState()
+
+		onProgress = null
+		onPlaybackEnded = null
 	}
 }

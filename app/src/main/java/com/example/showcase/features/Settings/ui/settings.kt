@@ -35,15 +35,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.util.UnstableApi
+import androidx.navigation.NavHostController
 import com.example.showcase.features.Library.ui.Components.TypewriterText
+import com.example.showcase.ui.Navigation.HomeRoute
 import com.example.showcase.ui.Theme.VMocha
 
 @OptIn(UnstableApi::class)
-@Preview(
-	showBackground = true, showSystemUi = true
-)
 @Composable
-fun Settings() {
+fun Settings(navController: NavHostController) {
 	var start by remember { mutableStateOf(false) }
 	val hight by animateDpAsState(
 		targetValue = if (start) 250.dp else 0.dp,
@@ -65,7 +64,6 @@ fun Settings() {
 				.height(hight)
 				.background(VMocha.Mantle, shape = RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp))
 		) {
-
 			TypewriterText(
 				"ShowCase",
 				color = VMocha.Text,
@@ -83,14 +81,15 @@ fun Settings() {
 				fontSize = 12.sp,
 				modifier = Modifier.align(Alignment.BottomEnd)
 			)
-			IconButton(onClick = {}, modifier = Modifier.align(Alignment.BottomStart)) {
+			IconButton(onClick = {
+				navController.navigate(HomeRoute)
+			}, modifier = Modifier.align(Alignment.BottomStart)) {
 				Icon(
 					Icons.Default.ArrowBack,
 					"",
 					tint = VMocha.Text
 				)
 			}
-
 		}
 		LazyColumn (Modifier.fillMaxWidth()){
 

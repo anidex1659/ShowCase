@@ -6,11 +6,8 @@ import com.example.showcase.features.MetaData.data.repository.metadata.movie.Mov
 import com.example.showcase.features.MetaData.data.repository.metadata.sires.SeriesRepository
 
 class HomeRepository(
-
     private val seriesRepository: SeriesRepository,
-
     private val movieRepository: MovieRepository
-
 ) {
 
     suspend fun getContinueWatching(): List<SeriesUiModel> {

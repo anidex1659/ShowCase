@@ -147,7 +147,7 @@ class PlayerManager(
                 }
 
                 override fun onPlayerError(error: PlaybackException) {
-
+                    Log.d("Anidex_VM", "Received Exo Error")
                     _playerState.update {
 
                         it.copy(
@@ -560,5 +560,23 @@ class PlayerManager(
         scope.cancel()
         onProgress?.invoke(playerState.value)
         player.release()
+    }
+
+
+    fun reset() {
+
+        progressJob?.cancel()
+
+        player.stop()
+        player.clearMediaItems()
+
+        _audioTracks.value = emptyList()
+        _subtitleTracks.value = emptyList()
+
+        _playerState.value = PlayerState()
+
+        onProgress = null
+        onPlaybackEnded = null
+        onError = null
     }
 }

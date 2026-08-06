@@ -119,12 +119,6 @@ class LibraryScanner(
 
                     )
 
-//                    val storageLocation =
-//
-//                        StorageLocationManager
-//                            .seriesStorageFolder(
-//                                series.folderPath
-//                            )
                     ProgressManager.update(
 
                         title = "Downloading artwork",
@@ -245,28 +239,3 @@ class LibraryScanner(
     }
 }
 
-//                          LibraryEntity
-//                          │
-//                          ▼
-//                          Update Progress
-//                          │
-//                          ▼
-//                          Cleanup Missing Database Entries
-//                          │
-//                          ▼
-//                          Open SAF Root Folder
-//                          │
-//                          ▼
-//                          Recursively Scan Files
-//                          │
-//                          ▼
-//                          List<MediaFile>
-//                          │
-//                          ▼
-//                          Check Library Type
-//                          │
-//                          ├──── Series ────► LibraryScanner
-//                          │
-//                          ├──── Movies ────► MovieScanner
-//                          │
-//                          └──── Music ─────► MusicScanner

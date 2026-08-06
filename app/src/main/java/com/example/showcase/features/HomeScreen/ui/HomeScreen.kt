@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
-
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayCircle
@@ -42,21 +41,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import coil.compose.AsyncImage
 import com.example.showcase.core.ProgressManager.ProgressManager
 import com.example.showcase.features.HomeScreen.repo.HomeRepository
 import com.example.showcase.features.HomeScreen.viewmodel.HomeViewModel
 import com.example.showcase.features.HomeScreen.viewmodel.HomeViewModelFactory
+import com.example.showcase.features.MediaPages.ui.AnimatedBackdrop
 import com.example.showcase.features.MetaData.data.database.DatabaseProvider
 import com.example.showcase.features.MetaData.data.repository.metadata.MetadataStorageRepository
 import com.example.showcase.features.MetaData.data.repository.metadata.movie.MovieRepository
@@ -89,18 +86,13 @@ import kotlinx.coroutines.delay
             .getDatabase(context)
             .dao()
 
-
-
-
-    val metadataStorageRepository: MetadataStorageRepository = MetadataStorageRepository(
+    val metadataStorageRepository = MetadataStorageRepository(
         context = context,
         jsonManager = MetadataJsonManager(dao),
         movieJsonManager = MovieMetadataJsonManager(dao)
     )
     val seriesRepository = remember { SeriesRepository(dao,metadataStorageRepository) }
     val movieRepository = remember { MovieRepository(dao) }
-
-
     val playerrepository = PlayerRepository(seriesRepository, movieRepository, dao,metadataStorageRepository)
 
     PlayerGraph.initialize(
@@ -188,13 +180,11 @@ import kotlinx.coroutines.delay
     }
 
     LaunchedEffect(Unit) {
-        delay(3500)
+        delay(1000)
         animationFinished = true
     }
 
-    val ready =
-        animationFinished &&
-                !uiState.loading
+    val ready = animationFinished && !uiState.loading
 
 
     var refreshing by remember {
@@ -239,8 +229,7 @@ import kotlinx.coroutines.delay
         }
     ) {
 
-        Box() {
-
+        Box{
             Box(modifier = Modifier.fillMaxSize())
             {
                 AnimatedContent(
@@ -257,13 +246,12 @@ import kotlinx.coroutines.delay
                     },
                     label = ""
                 ) { image ->
-                    AsyncImage(
-                        model = image,
-                        contentDescription = "home_screen_BackGround",
+                    AnimatedBackdrop(
+                        image = image,
+                        duraction = 3000,
                         modifier = Modifier
                             .fillMaxSize()
-                            .blur(1.dp),
-                        contentScale = ContentScale.Crop,
+                            .blur(1.dp)
 
                         )
                 }
@@ -288,9 +276,9 @@ import kotlinx.coroutines.delay
 					)
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    Column() {
+                    Column{
                         ContinueButton()
-                        //^^contnuew button
+                        //^^Continue button
 
                         Spacer(modifier = Modifier.height(10.dp))
 						Panel(
@@ -334,8 +322,7 @@ import kotlinx.coroutines.delay
 }
 
 
-//Continiew Watching Button
-//@Preview
+//Continue Watching Button
 @Composable
 fun ContinueButton() {
 

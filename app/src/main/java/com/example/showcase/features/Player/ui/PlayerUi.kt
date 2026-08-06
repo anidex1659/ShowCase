@@ -126,7 +126,11 @@ fun PlayScreenV(
     LaunchedEffect(
         playerEngine
     ) {
-        if (playerEngine== PlayerEngine.VLC) Toast.makeText(context,"(HW) Failed - Switched To Software (SW) acceleration", Toast.LENGTH_SHORT).show()
+        if (playerEngine == PlayerEngine.VLC) Toast.makeText(
+            context,
+            "Using Software (SW) acceleration",
+            Toast.LENGTH_SHORT
+        ).show()
     }
 
     val progress by ProgressManager
@@ -147,7 +151,6 @@ fun PlayScreenV(
                     contentScale = ContentScale.Crop
                 )
             }
-
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -155,7 +158,6 @@ fun PlayScreenV(
                         color = VMocha.Blue.copy(0.3f)
                     )
             )
-
             Column(
                 Modifier.fillMaxSize()
             ) {
@@ -164,7 +166,6 @@ fun PlayScreenV(
                     Modifier
                         .padding(5.dp)
                         .background(VMocha.Crust, RoundedCornerShape(20.dp))
-
                 ) {
                     Column {
                         Box(
@@ -181,13 +182,10 @@ fun PlayScreenV(
                             )
                         }
                         Spacer(Modifier.padding(5.dp))
-
                         MedialPlean(metadata, playerViewModel, playerEngine)
                     }
-
                 }
                 Spacer(Modifier.padding(5.dp))
-
                 EpPanel(
                     state.playlist,
                     state.currentIndex,
@@ -206,17 +204,13 @@ fun PlayScreenV(
     } else {
         FullScreenPlayer(PlayerGraph.playerManager, playerViewModel, metadata, state)
     }
-
     val sheet by playerViewModel.trackSheet.collectAsState()
-
     if (sheet != TrackSheetType.NONE) {
-
         ModalBottomSheet(
             onDismissRequest = {
                 playerViewModel.hideSheet()
             }
         ) {
-
             when (sheet) {
 
                 TrackSheetType.AUDIO ->
@@ -242,35 +236,24 @@ fun Player(
     modifier: Modifier = Modifier
         .fillMaxWidth()
         .height(220.dp),
-    vlcPlayerManager: VlcPlayerManager
+    vlcPlayerManager: VlcPlayerManager,
+    overlayVisible: Boolean = false
 ) {
-
     val state by playerViewModel.state.collectAsState()
-
     val playerEngine by playerViewModel.playerEngine.collectAsState()
-
     var controlsVisible by remember<MutableState<Boolean>> {
         mutableStateOf(true)
     }
-
     LaunchedEffect(controlsVisible, state.isPlaying) {
-
-        if (!isfullscreen) { //if Screen In Vertical
-            controlsVisible = false
-        }
-        if (controlsVisible && state.isPlaying) {
-
+        if (!isfullscreen) controlsVisible = false //if Player is in Vertical
+        if ((controlsVisible && state.isPlaying)) {
             delay(4000)
-
             controlsVisible = false
         }
-
     }
     Box(
         modifier = modifier
-
     ) {
-
         when (playerEngine) {
              PlayerEngine.EXO ->
             VideoPlayer(
@@ -279,7 +262,6 @@ fun Player(
                     .fillMaxWidth()
                     .matchParentSize()
             )
-
             PlayerEngine.VLC ->
             VlcVideoPlayer(
                 vlcPlayerManager,
@@ -287,17 +269,14 @@ fun Player(
                     .fillMaxSize()
             )
         }
-
         AnimatedVisibility(
-            visible = controlsVisible,
+            visible = controlsVisible && !overlayVisible,
             enter = fadeIn() + slideInVertically(),
             exit = fadeOut() + slideOutVertically(),
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .fillMaxWidth()
         ) {
-
-
             //^^player
             TopControllsV(
                 modifier = Modifier
@@ -324,7 +303,6 @@ fun Player(
             )
         }
         //^^controls
-
         Box(
             Modifier
                 .fillMaxHeight(0.7f)
@@ -333,9 +311,7 @@ fun Player(
                 .pointerInput(Unit) {
                     detectTapGestures(
                         onTap = { controlsVisible = !controlsVisible },
-
                         onDoubleTap = { offset ->
-
                             if (offset.x < size.width / 2) {
                                 // Left half
                                 when (playerEngine) {
@@ -349,11 +325,12 @@ fun Player(
                                     PlayerEngine.VLC -> PlayerGraph.vlcPlayerManager.seekForward()
                                 }
                             }
-                        })
-                })
-
+                        }
+                    )
+                }
+        )
         AnimatedVisibility(
-            visible = controlsVisible,
+            visible = controlsVisible && !overlayVisible,
             Modifier.align(Alignment.Center),
             enter = fadeIn(),
             exit = fadeOut()
@@ -366,7 +343,6 @@ fun Player(
                 playerEngine
             )
         }
-
     }
 }
 
@@ -410,9 +386,11 @@ fun EpPanel(
         )
         {
             Row(
-                Modifier.fillMaxWidth().background(
-                    VMocha.Mantle, shape = RoundedCornerShape(20.dp)
-                ), verticalAlignment = Alignment.CenterVertically
+                Modifier
+                    .fillMaxWidth()
+                    .background(
+                        VMocha.Mantle, shape = RoundedCornerShape(20.dp)
+                    ), verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     state.media.title + " | E" + state.media.episodeNumber,
@@ -600,6 +578,17 @@ fun formatTime(ms: Long): String {
             minutes,
             seconds
         )
+}
+
+fun toSeconds(ms: Long): Long {
+
+    val totalSeconds = ms / 1000
+
+    val hours = totalSeconds / 3600
+    val minutes = (totalSeconds % 3600) / 60
+    val seconds = totalSeconds % 60
+
+    return totalSeconds //total seconds
 }
 @Composable
 fun SeekBar(

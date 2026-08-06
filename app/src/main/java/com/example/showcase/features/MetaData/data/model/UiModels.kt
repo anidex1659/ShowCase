@@ -53,7 +53,7 @@ data class SeasonUiModel(
 data class EpisodeUiModel(
 
     val episode: EpisodeEntity,
-
+    val metadata: EpisodeMetadata? = null,
     val playback: PlaybackHistoryEntity? = null,
     val plot : String ="",
     val watched: Boolean = false,

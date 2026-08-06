@@ -45,14 +45,15 @@ class PlayerRepository(
                         .map {
 
                             val episode = it.episode
+                            val metadata =it.metadata
                             val playback=dao.getEpisodePlayback(it.episode.id)
 
                             PlayerMedia(
                                 id = episode.id,
                                 type = MediaType.EPISODE,
-                                title = episode.title,
+                                title = metadata?.title?:episode.title,
                                 videoUri = episode.filePath,
-                                plot = it.plot,
+                                plot = metadata?.plot?:it.plot,
                                 poster = series.poster?.uri,
                                 backdrop = series.backdrop?.uri,
                                 seasonNumber = episode.seasonNumber,
@@ -94,13 +95,9 @@ class PlayerRepository(
         val playback= dao.getMoviePlayback(movieId)
 
         return PlayerMedia(
-
             id = movie.movie.id,
-
             type = MediaType.MOVIE,
-
             title = movie.movie.title,
-
             videoUri = movie.movie.filePath,
 
             poster =

@@ -29,7 +29,7 @@ fun AppNavGraph() {
         }
 
         composable<SettingsRoute> {
-            Settings()
+            Settings(navController)
         }
 
         composable<HomeRoute> {

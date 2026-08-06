@@ -46,11 +46,14 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -76,6 +79,7 @@ import com.example.showcase.features.MetaData.data.model.MovieUiModel
 import com.example.showcase.features.MetaData.data.model.SeriesUiModel
 import com.example.showcase.features.Player.PlayerCore.PlayerManager
 import com.example.showcase.features.Player.PlayerViewModel.PlayerViewModel
+import com.example.showcase.features.Player.model.MediaType
 import com.example.showcase.features.Player.ui.VlcVideoPlayer
 import com.example.showcase.ui.Navigation.HomeRoute
 import com.example.showcase.ui.Navigation.LibraryRoute
@@ -85,7 +89,10 @@ import com.example.showcase.ui.Navigation.PlayerGraph
 import com.example.showcase.ui.Navigation.PlayerRoute
 import com.example.showcase.ui.Navigation.PlayerType
 import com.example.showcase.ui.Navigation.SeriesInfoRoute
+import com.example.showcase.ui.Navigation.SettingsRoute
 import com.example.showcase.ui.Theme.VMocha
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 //@Preview
 @OptIn(ExperimentalFoundationApi::class)
@@ -94,7 +101,26 @@ fun HeroCarousel(
     featured: List<SeriesUiModel>,
     navController: NavHostController
 ) {
-    val pagerState = rememberPagerState { featured.size }
+    if (featured.isEmpty()) return
+
+    val pagerState = rememberPagerState(
+        initialPage = 0,
+        pageCount = { featured.size }
+    )
+
+    // Auto-slide every 5 seconds
+    LaunchedEffect(pagerState, featured.size) {
+        while (true) {
+            delay(5000L)
+
+            val nextPage =
+                (pagerState.currentPage + 1) % featured.size
+
+            pagerState.animateScrollToPage(
+                page = nextPage
+            )
+        }
+    }
 
     HorizontalPager(
         state = pagerState
@@ -232,9 +258,6 @@ fun MoviePosterRow(
     }
 }
 
-
-
-//@Preview
 @Composable
 fun Panel(
     modifier: Modifier,
@@ -250,15 +273,10 @@ fun Panel(
             LazyColumn(
                 modifier = modifier.fillMaxSize()
             ) {
-//            item {
-//                MediaSection("Continue Watching",{}) {
-//                    PosterRow(uiState.continueWatching)
-//                }
-//            }
 
                 item {
                     MediaSection(
-                        "Trending Series",
+                        "Series",
                         onClick = {
                             navController.navigate(MediaRoute("Series"))
                         }
@@ -273,7 +291,7 @@ fun Panel(
 
                 item {
                     MediaSection(
-                        "Trending Movies",
+                        "Movies",
                         onClick = {
                             navController.navigate(MediaRoute("Movies"))
                         }
@@ -354,6 +372,8 @@ fun BootomBAR(
     } else {
         VMocha.Text
     }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     Row(
         modifier = Modifier
@@ -416,7 +436,16 @@ fun BootomBAR(
                         .align(Alignment.Center)
                 ) {//mini player controllers
                     IconButton(
-                        onClick = { navController.navigate(LibraryRoute) }
+                        onClick = {
+                            if (progress.playerState?.media?.type == MediaType.MOVIE)
+                                navController.navigate(
+                                    PlayerRoute(
+                                        progress.playerState.media.id,
+                                        PlayerType.MOVIE
+                                    )
+                                )
+                        },
+                        enabled = if (progress.playerState?.media?.type == MediaType.MOVIE) true else false
                     ) {
                         Icon(
                             imageVector = Icons.Default.SubdirectoryArrowRight,
@@ -454,13 +483,15 @@ fun BootomBAR(
                     }
 
                     IconButton(
-                        onClick = { navController.navigate(LibraryRoute) }
+                        onClick = {
+                            PlayerGraph.playerManager.reset()
+                            PlayerGraph.vlcPlayerManager.reset()}
                     ) {
 
                         Icon(
                             imageVector = Icons.Default.Stop,
                             contentDescription = null,
-                            tint = VMocha.Text
+                            tint = VMocha.Red
                         )
                     }
                 }
@@ -480,19 +511,8 @@ fun BootomBAR(
                     tint = VMocha.Text
                 )
             }
-
             IconButton(
-                onClick = {}
-            ) {
-
-                Icon(
-                    imageVector = Icons.Default.Sync,
-                    contentDescription = null,
-                    tint = VMocha.Text,
-                )
-            }
-            IconButton(
-                onClick = {}
+                onClick = {navController.navigate(SettingsRoute)}
             ) {
 
                 Icon(
@@ -557,7 +577,6 @@ fun TopBar(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-
         IconButton(
             onClick = {navController.navigate(HomeRoute)}) {
 
@@ -568,7 +587,6 @@ fun TopBar(
         }
 
         Row {
-
             IconButton(
                 onClick = {navController.navigate(LibraryRoute)}
             ) {
@@ -577,19 +595,6 @@ fun TopBar(
                     imageVector = Icons.Default.VideoLibrary,
                     contentDescription = null,
                     tint = VMocha.Text
-                )
-            }
-
-            IconButton(
-                onClick = {
-
-                }
-            ) {
-
-                Icon(
-                    imageVector = Icons.Default.Sync,
-                    contentDescription = null,
-                    tint = VMocha.Text,
                 )
             }
             IconButton(

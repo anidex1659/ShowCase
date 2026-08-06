@@ -27,6 +27,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -129,14 +131,51 @@ fun FullScreenPlayer(playerManager: PlayerManager, playerViewModel: PlayerViewMo
 			isfullscreen = true,
 			playerInfoState = playerInfoState,
 			modifier = Modifier.fillMaxSize(),
-            PlayerGraph.vlcPlayerManager
+            PlayerGraph.vlcPlayerManager,
+            overlayVisible
 		)
+
+        var remaingDuration by remember { mutableStateOf(100L) }
+        remaingDuration=(toSeconds(state.duration)-toSeconds(state.currentPosition))
+        if ( remaingDuration <= 60L && state.media?.type == MediaType.EPISODE ) {
+            Card (
+                onClick = {playerViewModel.playNextEpisode()},
+                shape = RoundedCornerShape(10.dp),
+                colors = CardDefaults.cardColors(VMocha.Crust.copy(0.5f)),
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .fillMaxWidth(0.4f)
+                    .fillMaxHeight(0.3f)
+                    .padding(end = 20.dp, bottom = 10.dp)
+            ) {//Card for next ep-sode
+                Box(Modifier.fillMaxSize()) {
+                    Column(Modifier.padding(start = 5.dp)) {
+                        Text(
+                            text = "In Next Of " + playerInfoState.series?.metadata?.title,
+                            color = VMocha.Text,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Start,
+                        )
+                        Text(
+                            text = if (state.currentIndex == state.playlist.size - 1) " " else state.playlist[state.currentIndex + 1].plot,
+                            fontSize = 12.sp,
+                            style = TextStyle(
+                                lineHeight = 13.sp
+                            ),
+                            color = VMocha.Text,
+                            fontWeight = FontWeight.Light,
+                            textAlign = TextAlign.Start,
+                        )
+                    }
+                }
+            }
+        }
 
         AnimatedVisibility(
             overlayVisible,
             enter = fadeIn() + expandHorizontally(),
             exit = fadeOut() + shrinkHorizontally()
-        ) {
+        ) {//ep-sode Info over-lay
             FullScreenOverlay({
               playerViewModel.togglePlayPause()
                 overlayVisible = false
@@ -144,6 +183,8 @@ fun FullScreenPlayer(playerManager: PlayerManager, playerViewModel: PlayerViewMo
         }
 
     }
+
+
 
 }
 
@@ -702,18 +743,23 @@ fun BootomControlls(
             )
             Box(
                 modifier = Modifier
-                    .fillMaxWidth().padding(start = 5.dp, end = 5.dp)
+                    .fillMaxWidth()
+                    .padding(start = 5.dp, end = 5.dp)
             ) {
                 Text(
                     formatTime(state.currentPosition),
-                    modifier = Modifier.padding(start = 5.dp, end = 5.dp).align(Alignment.CenterStart),
+                    modifier = Modifier
+                        .padding(start = 5.dp, end = 5.dp)
+                        .align(Alignment.CenterStart),
                     color = VMocha.Text,
                     textAlign = TextAlign.Start
                 )
 
                 Text(
                     formatTime(state.duration),
-                    modifier = Modifier.padding(start = 5.dp, end = 5.dp).align(Alignment.CenterEnd),
+                    modifier = Modifier
+                        .padding(start = 5.dp, end = 5.dp)
+                        .align(Alignment.CenterEnd),
                     color = VMocha.Text,
                     textAlign = TextAlign.End
                 )

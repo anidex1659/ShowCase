@@ -45,103 +45,6 @@ import com.example.showcase.features.MetaData.data.model.MovieUiModel
 import com.example.showcase.features.MetaData.data.model.SeriesUiModel
 import com.example.showcase.ui.Theme.VMocha
 
-@Preview(showBackground = true)
-@Composable
-fun BackDroupCard() {
-    val scale by rememberInfiniteTransition(label = "").animateFloat(
-            initialValue = 1f, targetValue = 1.08f, animationSpec = infiniteRepeatable(
-                animation = tween(
-                    durationMillis = 1200, easing = FastOutSlowInEasing
-                ), repeatMode = RepeatMode.Reverse
-            ), label = ""
-        )
-    Column() {
-
-        Card(
-            shape = RoundedCornerShape(20, 20, 20, 20), colors = CardDefaults.cardColors(
-                containerColor = Color.Transparent
-            ),
-            //border = BorderStroke(width = 5.dp, color = VMocha.Blue),
-            modifier = Modifier
-                .padding(16.dp, 16.dp, 16.dp, 16.dp)
-                .height(220.dp)
-                .fillMaxWidth()
-        ) {
-            Box(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                Card(
-                    shape = RoundedCornerShape(20, 20, 20, 20),
-                    border = BorderStroke(width = 5.dp, color = VMocha.Blue),
-                    modifier = Modifier
-                        .padding(0.dp, 0.dp, 0.dp, 30.dp)
-                        .fillMaxSize()
-                ) {
-                    Image(
-                        painter = painterResource(R.drawable.folder),//backdroup image tobe changed
-                        contentDescription = "home_screen_BackGround",
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-
-                    )
-                }
-
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .height(40.dp)
-                        .width(80.dp)
-                        .background(
-                            shape =  RoundedCornerShape(0, 50, 0, 50),
-                            color = VMocha.Crust
-                        )
-                ) {
-                    Text(
-                        "7.8", // RATING
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = VMocha.Teal,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(vertical = 5.dp),
-                        textAlign = TextAlign.Center
-
-                    )
-                }
-
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .height(80.dp)
-                        .width(80.dp)
-                        .background(
-                            shape =  RoundedCornerShape(100),
-                            color = VMocha.Crust
-                        )
-                ) {
-                    IconButton(
-                        modifier = Modifier.fillMaxSize(), onClick = {}) {
-                        Icon(
-                            Icons.Default.PlayCircle,
-                            null,
-                            tint = VMocha.Text,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(10.dp)
-                                .graphicsLayer(
-                                    scaleX = scale, scaleY = scale
-                                )
-                        )
-                    }
-                }
-
-            }
-
-
-        }
-    }
-}
-//@Preview(showBackground = true)
 @Composable
 fun PosterCard2(series: SeriesUiModel, onClick: () -> Unit, onPlayClick: () -> Unit) {
     val scale by rememberInfiniteTransition(label = "").animateFloat(
@@ -184,14 +87,11 @@ fun PosterCard2(series: SeriesUiModel, onClick: () -> Unit, onPlayClick: () -> U
 
                     )
                 }
-
                 Box(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .height(40.dp)
                         .fillMaxWidth(0.8f)
-                        //.width(100.dp)
-
                         .background(
                             VMocha.Base, RoundedCornerShape(0)
                         )
@@ -211,7 +111,6 @@ fun PosterCard2(series: SeriesUiModel, onClick: () -> Unit, onPlayClick: () -> U
 
                     )
                 }
-
                 Box(
                     modifier = Modifier
                         .align(Alignment.BottomStart)

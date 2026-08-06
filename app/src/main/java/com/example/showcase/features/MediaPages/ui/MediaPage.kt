@@ -1,6 +1,7 @@
 package com.example.showcase.features.MediaPages.ui
 
 import android.app.Activity
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
@@ -14,6 +15,7 @@ import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -52,7 +54,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
@@ -90,6 +94,7 @@ import com.example.showcase.ui.Navigation.PlayerType
 import com.example.showcase.ui.Navigation.SeriesInfoRoute
 import com.example.showcase.ui.Theme.VMocha
 import kotlinx.coroutines.delay
+import kotlin.collections.mapNotNull
 
 
 //@Preview(showSystemUi = true, showBackground = true)
@@ -105,8 +110,6 @@ fun MediaPage(navController: NavHostController,Show : String) {
         .collectAsState()
 
     val dao = DatabaseProvider.getDatabase(context).dao()
-
-
 
     val jsonmanger= MetadataJsonManager(dao)
     val movieMetadataJsonManager = MovieMetadataJsonManager(dao)
@@ -143,10 +146,34 @@ fun MediaPage(navController: NavHostController,Show : String) {
         }
     }
     val uiState by MediaViewModel.uiState.collectAsState()
-
-
     val media = uiState.media
+    val mediaSize = media.size
+    val backgrounds = remember(media) {
+        buildList {
 
+            addAll(
+                media.mapNotNull { it.poster
+                }
+            )
+        }.distinct()
+    }
+    var currentBackground by remember {
+        mutableStateOf<String?>(null)
+    }
+    LaunchedEffect(backgrounds) {
+
+        if (backgrounds.isEmpty()) return@LaunchedEffect
+
+        while (true) {
+
+            currentBackground =
+                backgrounds.random()
+
+            delay(8000) // every 8 seconds
+        }
+
+
+    }
 
     // Hide system status bar and navigation bar when entering full screen
     DisposableEffect(Unit) {
@@ -170,33 +197,65 @@ fun MediaPage(navController: NavHostController,Show : String) {
         }
     }
 
-
     Box(Modifier
         .fillMaxSize()
         .background(VMocha.Crust)) {
 
-        Column() {
+        AnimatedContent(
+            targetState = currentBackground,
+            transitionSpec = {
 
-            Spacer(Modifier.padding(2.dp))
+                fadeIn(
+                    animationSpec = tween(1200)
+                ) togetherWith
 
+                        fadeOut(
+                            animationSpec = tween(1200)
+                        )
+            },
+            label = ""
+        ) { image ->
+            AnimatedBackdrop(
+                image=image?.toUri(),
+                duraction = 3000,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    color = VMocha.Lavender.copy(0.2f)
+                )
+        )
+
+        Column{
+            Spacer(Modifier.height(50.dp))
             HeroCarousel2(media,navController)
-            
             Spacer(Modifier.padding(2.dp))
-
             TopBar(navController,progress)
-
             Spacer(Modifier.padding(2.dp))
 
-            LazyColumn {
-                    items(media.chunked(3)) { row ->
+            LazyColumn(
+               modifier =  Modifier
+                    .fillMaxHeight()
+                    .background(
+                        VMocha.Crust.copy(0.7f),
+                        RoundedCornerShape(topEnd = 20.dp, topStart = 20.dp)
+                    )
 
+            ) {
+                item { Spacer(modifier = Modifier.height(20.dp)) }
+                    items(media.chunked(3)) { row ->
                     Row(
-                        Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(top = 10.dp, start = 5.dp, end = 5.dp, bottom = 5.dp),
+                        horizontalArrangement = Arrangement.spacedBy(5.dp)
                     ) {
 
                         row.forEach { media ->
-
                             PosterCard3(media = media, onClick = {
                                 if (media.type == MediaType.SERIES) {
                                     navController.navigate(SeriesInfoRoute(media.id))
@@ -222,14 +281,12 @@ fun MediaPage(navController: NavHostController,Show : String) {
                                 }
                             )
                         }
-
-                        if (row.size == 1) {
-                            Spacer(Modifier.width(150.dp))
-                        }
+//                        if (row.size == 1) {
+//                            Spacer(Modifier.width(150.dp))
+//                        }
                     }
                 }
             }
-
 
 
         }
@@ -313,13 +370,11 @@ fun PosterCard3(media: MediaCardUiModel, onClick: () -> Unit, onPlayClick: () ->
             ),
             //border = BorderStroke(width = 5.dp, color = VMocha.Blue),
             modifier = Modifier
-                //.padding(16.dp, 16.dp, 0.dp, 0.dp)
-                .height(225.dp)
-                .width(150.dp)
+                .height(190.dp)
+                .width(125.dp)
                 .clickable(
                     onClick = onClick
                 )
-                .padding(bottom = 20.dp)
         ) {
             Box(
                 modifier = Modifier.fillMaxSize()
@@ -339,15 +394,6 @@ fun PosterCard3(media: MediaCardUiModel, onClick: () -> Unit, onPlayClick: () ->
                         contentScale = ContentScale.Crop
 
                     )
-
-//                    Image(
-//                        painter = painterResource(R.drawable.sifi),//backdroup image tobe changed
-//                        contentDescription = "thumb",
-//                        modifier = Modifier.fillMaxSize(),
-//                        contentScale = ContentScale.Crop
-//
-//                    )
-
 
                 }
 
@@ -404,10 +450,7 @@ fun PosterCard3(media: MediaCardUiModel, onClick: () -> Unit, onPlayClick: () ->
                         )
                     }
                 }
-
             }
-
-
         }
     }
 }
@@ -418,15 +461,12 @@ fun PosterCard3(media: MediaCardUiModel, onClick: () -> Unit, onPlayClick: () ->
 fun HeroCarousel2(
     media: List<MediaCardUiModel>,
     navController: NavHostController,
-
-
     ) {
     val pagerState = rememberPagerState { media.size }
     HorizontalPager(
         state = pagerState,
         contentPadding = PaddingValues(vertical = 10.dp, horizontal = 5.dp)
     ) { page ->
-
         Herocard(
             onClick = {
                 if (media[page].type == MediaType.SERIES) {
@@ -449,104 +489,89 @@ private fun Herocard(
     onPlay: () -> Unit,
     info: String
 ) {
-
     var expanded by remember {
         mutableStateOf(false)
     }
-
     val transition = updateTransition(expanded, label = "")
-
     val widthFraction by transition.animateFloat(
         transitionSpec = { tween(600) },
         label = ""
     ) {
         if (it) 0.9f else 0.18f
     }
-
     LaunchedEffect(expanded) {
-        if(!expanded){
+        if (!expanded) {
             delay(2000)
-            expanded=true
-        }else {
+            expanded = true
+        } else {
             delay(8000)
-            expanded=false
+            expanded = false
         }
     }
-
     Card(
-    Modifier
-        .height(250.dp)
-        .fillMaxWidth()
-        .padding(horizontal = 10.dp, vertical = 5.dp)
-        .background(shape = RoundedCornerShape(20.dp), color = VMocha.Crust)
-        .clickable(onClick = onClick)
-) {
-    Box(modifier = Modifier.fillMaxSize()) {
-        AnimatedBackdrop(
-            image = medias.backdrop,
-            duraction = 1500,
-            modifier = Modifier.clip(shape = RoundedCornerShape(20.dp))
-        )
-
-
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .height(65.dp)
-                .fillMaxWidth(widthFraction)
-                .background(
-                    VMocha.Mantle, RoundedCornerShape(0, 100, 100, 20)
-                )
-        )
-        {
-            Row(
+        Modifier
+            .height(225.dp)
+            .fillMaxWidth()
+            .padding(horizontal = 10.dp, vertical = 5.dp)
+            .background(shape = RoundedCornerShape(20.dp), color = VMocha.Crust)
+            .clickable(onClick = onClick)
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            AnimatedBackdrop(
+                image = medias.backdrop,
+                duraction = 1500,
+                modifier = Modifier.clip(shape = RoundedCornerShape(20.dp))
+            )
+            Box(
                 modifier = Modifier
-                    .align(Alignment.Center)
-                    .padding(horizontal = 5.dp, vertical = 10.dp)
-                    .fillMaxSize(), horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-
-                AnimatedVisibility(
-                    visible = expanded,
-                    enter = fadeIn() + expandHorizontally(),
-                    exit = fadeOut() + shrinkHorizontally()
+                    .align(Alignment.BottomStart)
+                    .height(65.dp)
+                    .fillMaxWidth(widthFraction)
+                    .background(
+                        VMocha.Mantle, RoundedCornerShape(0, 100, 100, 20)
+                    )
+            )
+            {
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .padding(horizontal = 5.dp, vertical = 10.dp)
+                        .fillMaxSize(), horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Column(Modifier.fillMaxHeight()) {
 
-                        TypewriterText(
-                            medias.title,  // title ,
-                            color = VMocha.Text,
-                            maxLines = 1,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                            // modifier = Modifier.fillMaxWidth()
+                    AnimatedVisibility(
+                        visible = expanded,
+                        enter = fadeIn() + expandHorizontally(),
+                        exit = fadeOut() + shrinkHorizontally()
+                    ) {
+                        Column(Modifier.fillMaxHeight()) {
+
+                            TypewriterText(
+                                medias.title,  // title ,
+                                color = VMocha.Text,
+                                maxLines = 1,
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                // modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    }
+                    IconButton(
+                        modifier = Modifier.size(65.dp, 65.dp),
+                        onClick = onPlay
+                    ) {
+
+                        Icon(
+                            Icons.Default.PlayCircle,
+                            null,
+                            tint = VMocha.Text,
+                            modifier = Modifier
+                                .size(60.dp)
                         )
                     }
                 }
-
-
-
-                IconButton(
-                    modifier = Modifier.size(65.dp, 65.dp),
-                    onClick =onPlay
-                ) {
-
-                    Icon(
-                        Icons.Default.PlayCircle,
-                        null,
-                        tint = VMocha.Text,
-                        modifier = Modifier
-                            .size(60.dp)
-                    )
-                }
             }
-
         }
-
-
     }
-
-}
-    
 }
 

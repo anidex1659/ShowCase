@@ -26,11 +26,9 @@ class SeriesRepository(
     suspend fun getSeriesById(
         id: Long
     ): SeriesUiModel? {
-
         val series =
             dao.getSeriesById(id)
                 ?: return null
-
         return buildSeriesUiModel(series)
     }
 
@@ -74,19 +72,14 @@ class SeriesRepository(
 
         val episodes =
             dao.getEpisodesForSeries(series.id)
-
         val artwork =
             dao.getArtworkForSeries(series.id)
-
         val poster =
             artwork.firstOrNull { it.type == "poster" }
-
         val logo =
             artwork.firstOrNull { it.type == "logo" }
-
         val backdrop =
             artwork.firstOrNull { it.type == "backdrop" }
-
         val metadata =
             metadataStorageRepository.loadMetadata(
                 series.id,
@@ -138,9 +131,8 @@ class SeriesRepository(
             EpisodeUiModel(
 
                 episode = episode,
-
+                metadata=episodeMetadata,
                 playback = playback,
-
                 plot =
                     episodeMetadata?.plot
                         ?: "",

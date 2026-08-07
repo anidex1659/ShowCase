@@ -151,7 +151,7 @@ fun FullScreenPlayer(playerManager: PlayerManager, playerViewModel: PlayerViewMo
                 Box(Modifier.fillMaxSize()) {
                     Column(Modifier.padding(start = 5.dp)) {
                         Text(
-                            text = "In Next Of " + playerInfoState.series?.metadata?.title,
+                            text = "In Next Ep Of " + playerInfoState.series?.metadata?.title,
                             color = VMocha.Text,
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.Start,

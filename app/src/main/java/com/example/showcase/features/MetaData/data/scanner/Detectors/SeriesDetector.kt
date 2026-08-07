@@ -91,7 +91,7 @@ class SeriesDetector {
         // S01E01
         Regex("S(\\d{1,2})\\s*E(\\d{1,3})", RegexOption.IGNORE_CASE),
 
-        // Season 1 Episode 1
+        // Season ,1 Episode 1
         Regex(
             "Season\\s*(\\d{1,2})\\s*Episode\\s*(\\d{1,3})",
             RegexOption.IGNORE_CASE

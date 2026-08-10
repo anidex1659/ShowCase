@@ -35,6 +35,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.PauseCircle
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Settings
@@ -379,7 +380,7 @@ fun BootomBAR(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                color = VMocha.Base,
+                color = VMocha.Crust,
                 shape = RoundedCornerShape(
                     0.dp,
                     topEnd = 0.dp,
@@ -396,7 +397,7 @@ fun BootomBAR(
             onClick = {navController.navigate(HomeRoute)}) {
 
             Icon(
-                imageVector = Icons.Default.ArrowBack,
+                imageVector = Icons.Default.Home,
                 contentDescription = null, tint = VMocha.Text
             )
         }

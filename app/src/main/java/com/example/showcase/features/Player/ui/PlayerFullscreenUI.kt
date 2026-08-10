@@ -135,9 +135,18 @@ fun FullScreenPlayer(playerManager: PlayerManager, playerViewModel: PlayerViewMo
             overlayVisible
 		)
 
-        var remaingDuration by remember { mutableStateOf(100L) }
-        remaingDuration=(toSeconds(state.duration)-toSeconds(state.currentPosition))
-        if ( remaingDuration <= 60L && state.media?.type == MediaType.EPISODE ) {
+        val duration = toSeconds(state.duration)
+        val currentPosition = toSeconds(state.currentPosition)
+        val remainingDuration = duration - currentPosition
+        val remainingPercentage =
+            if (duration > 0) {
+                (remainingDuration.toFloat() / duration) * 100
+            } else {
+                0f
+            }
+
+        if ( remainingPercentage <= 5f && state.media?.type == MediaType.EPISODE )
+        {
             Card (
                 onClick = {playerViewModel.playNextEpisode()},
                 shape = RoundedCornerShape(10.dp),

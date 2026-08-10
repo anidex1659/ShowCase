@@ -11,22 +11,37 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.OpenInNew
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExposureNeg1
 import androidx.compose.material.icons.filled.ExposurePlus1
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.ErrorOutline
+import androidx.compose.material.icons.rounded.Key
+import androidx.compose.material.icons.rounded.Save
+import androidx.compose.material.icons.rounded.VpnKey
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,6 +56,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -164,7 +182,8 @@ fun ThemesSettings() {
 					.border(
 						1.dp,
 						VMocha.Text,
-						shape = RoundedCornerShape(20.dp))
+						shape = RoundedCornerShape(20.dp)
+					)
 					.background(
 						brush = Brush.linearGradient(
 							colors = listOf(
@@ -780,4 +799,274 @@ fun CaptionSetting() {
 			}
 		}
 	}
+}
+
+
+@Composable
+fun TmdbApi(onEdit: () -> Unit) {
+	Row(modifier = Modifier
+		.fillMaxWidth()
+		.padding(5.dp)
+	, verticalAlignment = Alignment.CenterVertically)
+	{
+		Text(
+			text = if (SettingsManager.tmdbApiAvailable) SettingsManager.tmdbApi else " Custom api not Set",
+			textAlign = TextAlign.Center,
+			color = VMocha.Subtext1,
+			maxLines = 1,
+			fontSize = 15.sp
+		)
+		Row(
+			modifier = Modifier
+				.fillMaxWidth()
+				.padding(5.dp),
+			verticalAlignment = Alignment.CenterVertically,
+			horizontalArrangement = Arrangement.End
+		) {
+			IconButton(
+				onEdit
+			) {
+				Icon(
+					Icons.Default.Edit,
+					"",
+					tint = VMocha.Text
+				)
+			}
+
+		}
+	}
+
+}
+@Preview
+@Composable
+fun TmdbApiKeyDialog(
+	apiKey: String = "",
+	apiAvailable: Boolean = false,
+	apiValidated: Boolean = false,
+	onApiKeyChange: (String) -> Unit = {},
+	onOpenTmdb: () -> Unit = {},
+	onDismiss: () -> Unit = {},
+	onSave: () -> Unit = {}
+) {
+	AlertDialog(
+		onDismissRequest = onDismiss,
+		containerColor = VMocha.Crust,
+
+		icon = {
+			Icon(
+				imageVector = Icons.Rounded.Key,
+				contentDescription = null,
+				tint = VMocha.Blue
+			)
+		},
+
+		title = {
+			Text(
+				text = "TMDB API Key",
+				color = VMocha.Text
+			)
+		},
+
+		text = {
+			Column(
+				verticalArrangement = Arrangement.spacedBy(16.dp)
+			) {
+
+				Text(
+					text = "Use your own TMDB API key for metadata lookups. Adding your own key is optional but recommended to avoid rate limits.",
+					style = MaterialTheme.typography.bodyMedium,
+					color = VMocha.Text
+				)
+
+				OutlinedTextField(
+					value = apiKey,
+					onValueChange = onApiKeyChange,
+					modifier = Modifier.fillMaxWidth(),
+					singleLine = true,
+
+					label = {
+						Text(
+							text = "API Key",
+							color = VMocha.Text
+						)
+					},
+
+					placeholder = {
+						Text(
+							text = "Paste your TMDB API key",
+							color = VMocha.Subtext1
+						)
+					},
+
+					leadingIcon = {
+						Icon(
+							imageVector = Icons.Rounded.VpnKey,
+							contentDescription = null,
+							tint = VMocha.Text
+						)
+					},
+
+					keyboardOptions = KeyboardOptions(
+						keyboardType = KeyboardType.Password
+					),
+
+					visualTransformation = PasswordVisualTransformation(),
+
+					colors = OutlinedTextFieldDefaults.colors(
+						focusedTextColor = VMocha.Text,
+						unfocusedTextColor = VMocha.Text,
+						focusedBorderColor = VMocha.Blue,
+						unfocusedBorderColor = VMocha.Surface1,
+						cursorColor = VMocha.Blue
+					)
+				)
+
+				// Validation status
+				if (apiKey.isNotBlank()) {
+
+					when {
+						apiValidated -> {
+
+							Row(
+								verticalAlignment = Alignment.CenterVertically
+							) {
+								Icon(
+									imageVector = Icons.Rounded.CheckCircle,
+									contentDescription = null,
+									tint = VMocha.Green
+								)
+
+								Spacer(
+									Modifier.width(8.dp)
+								)
+
+								Text(
+									text = "API key is valid",
+									color = VMocha.Green,
+									style = MaterialTheme.typography.bodySmall
+								)
+							}
+						}
+
+						apiAvailable && !apiValidated -> {
+
+							Row(
+								verticalAlignment = Alignment.CenterVertically
+							) {
+								Icon(
+									imageVector = Icons.Rounded.ErrorOutline,
+									contentDescription = null,
+									tint = VMocha.Yellow
+								)
+
+								Spacer(
+									Modifier.width(8.dp)
+								)
+
+								Text(
+									text = "API key has not been verified",
+									color = VMocha.Yellow,
+									style = MaterialTheme.typography.bodySmall
+								)
+							}
+						}
+					}
+				}
+
+				HorizontalDivider(
+					color = VMocha.Surface1
+				)
+
+				Text(
+					text = "How to get an API key",
+					color = VMocha.Text,
+					style = MaterialTheme.typography.titleSmall,
+					fontWeight = FontWeight.SemiBold
+				)
+
+				Column(
+					verticalArrangement = Arrangement.spacedBy(4.dp)
+				) {
+					Text(
+						"1. Create a free TMDB account.",
+						color = VMocha.Subtext1
+					)
+
+					Text(
+						"2. Verify your email.",
+						color = VMocha.Subtext1
+					)
+
+					Text(
+						"3. Open Settings → API.",
+						color = VMocha.Subtext1
+					)
+
+					Text(
+						"4. Request a Developer API Key.",
+						color = VMocha.Subtext1
+					)
+
+					Text(
+						"5. Copy the API Key (v3 Auth) and paste it here.",
+						color = VMocha.Subtext1
+					)
+				}
+
+				TextButton(
+					onClick = onOpenTmdb,
+					modifier = Modifier.align(Alignment.End),
+					colors = ButtonDefaults.textButtonColors(
+						contentColor = VMocha.Blue
+					)
+				) {
+					Icon(
+						imageVector = Icons.AutoMirrored.Rounded.OpenInNew,
+						contentDescription = null
+					)
+
+					Spacer(
+						Modifier.width(8.dp)
+					)
+
+					Text("Open TMDB")
+				}
+			}
+		},
+
+		confirmButton = {
+
+			Button(
+				onClick = onSave,
+				enabled = apiKey.isNotBlank(),
+				colors = ButtonDefaults.buttonColors(
+					containerColor = VMocha.Blue,
+					contentColor = VMocha.Crust
+				)
+			) {
+				Icon(
+					imageVector = Icons.Rounded.Save,
+					contentDescription = null
+				)
+
+				Spacer(
+					Modifier.width(8.dp)
+				)
+
+				Text("Save")
+			}
+		},
+
+		dismissButton = {
+
+			TextButton(
+				onClick = onDismiss,
+				colors = ButtonDefaults.textButtonColors(
+					contentColor = VMocha.Blue
+				)
+			) {
+				Text("Cancel")
+			}
+		}
+	)
 }

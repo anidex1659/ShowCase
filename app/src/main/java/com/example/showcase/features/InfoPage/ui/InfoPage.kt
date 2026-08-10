@@ -189,9 +189,7 @@ fun InfoPage(movieId: Long? = null, seriesId: Long? = null, navController: NavHo
 @Composable
 fun HeroCard(
 	rating: String,
-
 	poster: Any?,
-
 	logo: Any?, onplay: () -> Unit
 ) {
 	var badgeVisible by remember {
@@ -204,23 +202,17 @@ fun HeroCard(
 
 	LaunchedEffect(Unit) {
 		badgeVisible = true
-
 		delay(600)
-
 		playVisible = true
 	}
 
 	val playScale by animateFloatAsState(
 
 		targetValue = if (playVisible) 1f else 0.5f,
-
 		animationSpec = spring(
-
 			dampingRatio = Spring.DampingRatioMediumBouncy,
-
 			stiffness = Spring.StiffnessLow
 		),
-
 		label = ""
 	)
 
@@ -231,8 +223,7 @@ fun HeroCard(
 				), repeatMode = RepeatMode.Reverse
 			), label = ""
 		)
-	Column() {
-
+	Column{
 		Card(
 			shape = RoundedCornerShape(10, 10, 10, 0), colors = CardDefaults.cardColors(
 				containerColor = Color.Transparent
@@ -247,7 +238,7 @@ fun HeroCard(
 				modifier = Modifier.fillMaxSize()
 			) {
 				Card(
-					shape = RoundedCornerShape(10, 20, 10, 20),
+					shape = RoundedCornerShape(10, 10, 10, 20),
 					border = BorderStroke(width = 1.dp, color = VMocha.Lavender),
 					modifier = Modifier
 						.padding(0.dp, 0.dp, 0.dp, 30.dp)
@@ -261,21 +252,23 @@ fun HeroCard(
 
 					)
 				}
-
-
 				Box(
 					modifier = Modifier
 						.align(Alignment.TopEnd)
 						.height(40.dp)
 						.width(80.dp)
 						.background(
-							VMocha.Mantle, RoundedCornerShape(0, 50, 0, 50)
+							VMocha.Crust, RoundedCornerShape(0, 50, 0, 50)
 						)
+						.border(
+							1.dp,
+							VMocha.Crust,
+							RoundedCornerShape(0, 50, 0, 50))
 				) {
 
 					Text(
-						rating,
-						color = VMocha.Red,
+						rating.trim(),
+						color = VMocha.Text,
 						fontWeight = FontWeight.Bold,
 						fontSize = 20.sp,
 						textAlign = TextAlign.Center,
@@ -291,7 +284,7 @@ fun HeroCard(
 						.align(Alignment.BottomStart)
 						.size(120.dp)
 						.background(
-							VMocha.Mantle, RoundedCornerShape(100)
+							VMocha.Crust, RoundedCornerShape(100)
 						)
 				) {
 					IconButton(
@@ -348,9 +341,7 @@ private fun InfoPanel(
 		LazyColumn(
 			modifier = Modifier
 				.height(250.dp)
-				//.fillMaxHeight()
 				.background(VMocha.Mantle, RoundedCornerShape(10, 10, 10, 10))
-				.border(1.dp, VMocha.Lavender, RoundedCornerShape(10, 10, 10, 10))
 		) {
 			item {
 				TypewriterText(
@@ -377,7 +368,7 @@ private fun InfoPanel(
 			}
 			item {
 				Text(
-					"<$year" + "|" + "$status>",
+					"< $year >",
 					color = VMocha.Subtext0,
 					textAlign = TextAlign.End,
 					lineHeight = 24.sp,
@@ -394,7 +385,6 @@ private fun InfoPanel(
 
 @Composable
 fun SeriesInfoContent(
-
 	series: SeriesInfoUiModel,
 	playerViewModel: PlayerViewModel,
 	navController: NavHostController,

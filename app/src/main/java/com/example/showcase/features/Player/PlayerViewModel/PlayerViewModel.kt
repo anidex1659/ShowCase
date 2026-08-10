@@ -19,6 +19,7 @@ import com.example.showcase.features.Player.model.PlayerState
 import com.example.showcase.features.Player.model.SubtitleTrack
 import com.example.showcase.features.Player.model.TrackSheetType
 import com.example.showcase.features.Player.PlayerCore.repository.PlayerRepository
+import com.example.showcase.features.Player.ui.formatTime
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -74,33 +75,72 @@ class PlayerViewModel(
         }
     }
 
-    private fun switchToVlc(){
+    private fun switchToVlc() {
 
         val state = manager.playerState.value
         val media = state.media ?: return
 
-        if (_playerEngine.value == PlayerEngine.VLC)
-        {
-            Log.d("Anidex_vm","player engine is Already set to vlc")
+        if (_playerEngine.value == PlayerEngine.VLC) {
+            Log.d(
+                "Anidex_vm",
+                "Player engine is already VLC"
+            )
             return
         }
+        val resumePosition =
+            if (state.currentPosition > 0L) {
+                state.currentPosition
+            } else {
+                media.resume
+            }
+
+        Log.d(
+            "Anidex_vm",
+            "Switching EXO -> VLC"
+        )
+
+        Log.d(
+            "Anidex_vm",
+            "EXO live position = ${
+                formatTime(state.currentPosition)
+            }"
+        )
+
+        Log.d(
+            "Anidex_vm",
+            "Saved media position = ${
+                formatTime(media.resume)
+            }"
+        )
+
+        Log.d(
+            "Anidex_vm",
+            "VLC resume position = ${
+                formatTime(resumePosition)
+            }"
+        )
+
         manager.stop()
 
         val updated = media.copy(
-            resume = state.currentPosition
+            resume = resumePosition
         )
 
         _playerEngine.value = PlayerEngine.VLC
 
-        if(state.playlist.isEmpty()){
+        if (state.playlist.isEmpty()) {
 
-            vlcManager.loadMedia(updated)
+            vlcManager.loadMedia(
+                updated
+            )
 
-        }else{
+        } else {
 
-            val playlist = state.playlist.toMutableList()
+            val playlist =
+                state.playlist.toMutableList()
 
-            playlist[state.currentIndex] = updated
+            playlist[state.currentIndex] =
+                updated
 
             vlcManager.loadPlaylist(
                 playlist,
@@ -109,9 +149,12 @@ class PlayerViewModel(
         }
 
         vlcManager.play()
+
         Log.d(
-            "Anidex_PlayerVM",
-            "Player engine changed to VLC"
+            "Anidex_vm",
+            "VLC started at ${
+                formatTime(resumePosition)
+            }"
         )
     }
 
@@ -197,6 +240,7 @@ class PlayerViewModel(
                 repository.savePlayback(
                     playerState
                 )
+                Log.d("Anidex_VM","Saved PlayBack Va EXO " + formatTime( playerState.currentPosition))
             }
         }
 
@@ -222,6 +266,7 @@ class PlayerViewModel(
                 repository.savePlayback(
                     playerState
                 )
+                Log.d("Anidex_VM","Saved PlayBack Va Vlc " + formatTime( playerState.currentPosition))
             }
         }
 

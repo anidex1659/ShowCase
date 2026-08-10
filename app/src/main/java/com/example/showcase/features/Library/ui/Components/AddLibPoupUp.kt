@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.example.showcase.features.Library.viewmodel.LibraryViewModel
 import com.example.showcase.features.MetaData.data.database.DatabaseProvider
 import com.example.showcase.features.MetaData.data.database.entity.LibraryEntity
 import com.example.showcase.ui.Theme.VMocha
@@ -38,8 +39,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun AddLibraryDialog(
     showDialog: Boolean,
-
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    viewModel: LibraryViewModel
 ) {
 
     if (!showDialog)
@@ -48,12 +49,12 @@ fun AddLibraryDialog(
     Dialog(
         onDismissRequest = onDismiss
     ) {
-        AddLibraryDialogContent(onDismiss)
+        AddLibraryDialogContent(onDismiss,viewModel)
     }
 }
 
 @Composable
-fun AddLibraryDialogContent(onDismiss: () -> Unit) {
+fun AddLibraryDialogContent(onDismiss: () -> Unit, viewModel: LibraryViewModel) {
     var libraryName by remember {
         mutableStateOf("")
     }
@@ -151,7 +152,6 @@ fun AddLibraryDialogContent(onDismiss: () -> Unit) {
                     listOf(
                         "Series",
                         "Movies",
-                        "Music"
                     ).forEach { type ->
 
                         FilterChip(
@@ -214,7 +214,7 @@ fun AddLibraryDialogContent(onDismiss: () -> Unit) {
                                 lastScan = 0
                             )
                         )
-
+                        viewModel.loadLibraries()
                         onDismiss()
                     }
                 }

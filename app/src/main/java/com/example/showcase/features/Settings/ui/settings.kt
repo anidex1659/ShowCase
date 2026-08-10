@@ -1,5 +1,6 @@
 package com.example.showcase.features.Settings.ui
 
+import android.widget.Toast
 import androidx.annotation.OptIn
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
@@ -24,18 +25,21 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavHostController
+import com.example.showcase.core.SettingesManger.SettingsManager
 import com.example.showcase.features.Library.ui.Components.TypewriterText
 import com.example.showcase.ui.Navigation.HomeRoute
 import com.example.showcase.ui.Theme.VMocha
@@ -44,6 +48,7 @@ import com.example.showcase.ui.Theme.VMocha
 @Composable
 fun Settings(navController: NavHostController) {
 	var start by remember { mutableStateOf(false) }
+	var showTmdbDilog by remember { mutableStateOf(false)  }
 	val hight by animateDpAsState(
 		targetValue = if (start) 250.dp else 0.dp,
 		tween  (1000)
@@ -51,6 +56,40 @@ fun Settings(navController: NavHostController) {
 	LaunchedEffect(start) {
 		start=true
 	}
+	var apiKey by rememberSaveable {
+		mutableStateOf(SettingsManager.tmdbApi)
+	}
+
+	val contex =LocalContext.current
+	val uriHandler = LocalUriHandler.current
+
+	if (showTmdbDilog) TmdbApiKeyDialog(
+		apiKey = apiKey,
+
+		apiAvailable = SettingsManager.tmdbApiAvailable,
+
+		apiValidated = SettingsManager.apiValidated,
+
+		onApiKeyChange = { apiKey = it },
+
+		onOpenTmdb = { uriHandler.openUri("https://www.themoviedb.org/") },
+
+		onDismiss = {showTmdbDilog=false},
+
+		onSave = {
+			SettingsManager.set_tmdbApi(
+				apiKey.trim()
+			)
+			SettingsManager.set_tmdbApiAvailable(
+				true
+			)
+			SettingsManager.set_tmdbApiValidaty(
+				false
+			)
+			showTmdbDilog=false
+			Toast.makeText(contex,"Custom Tm-db API Updated", Toast.LENGTH_SHORT).show()
+		})
+
 	Column(
 		Modifier
 			.fillMaxSize()
@@ -62,7 +101,10 @@ fun Settings(navController: NavHostController) {
 				.padding(3.dp)
 				.fillMaxWidth()
 				.height(hight)
-				.background(VMocha.Mantle, shape = RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp))
+				.background(
+					VMocha.Mantle,
+					shape = RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp)
+				)
 		) {
 			TypewriterText(
 				"ShowCase",
@@ -104,6 +146,12 @@ fun Settings(navController: NavHostController) {
 			item {
 				Divider(Modifier.padding(5.dp), color = VMocha.Subtext0)
 				CaptionSetting()
+			}
+			item {
+				Divider(Modifier.padding(5.dp), color = VMocha.Subtext0)
+				TmdbApi(onEdit = {
+					showTmdbDilog = true
+				})
 			}
 		}
 	}

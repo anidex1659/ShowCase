@@ -3,7 +3,9 @@ package com.example.showcase.features.MetaData.data.remote
 
 import android.util.Log
 import com.example.showcase.BuildConfig
+import com.example.showcase.core.SettingesManger.SettingsManager
 import com.example.showcase.features.MetaData.data.remote.api.TmdbApi
+import com.example.showcase.features.Settings.ui.Settings
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -37,7 +39,7 @@ object TmdbNetworkModule {
                     .newBuilder()
                     .addHeader(
                         "Authorization",
-                        "Bearer ${BuildConfig.TMDB_API_KEY}"
+                        "Bearer ${ if (SettingsManager.tmdbApiAvailable) SettingsManager.tmdbApi else BuildConfig.TMDB_API_KEY }"
                     )
                     .addHeader(
                         "accept",

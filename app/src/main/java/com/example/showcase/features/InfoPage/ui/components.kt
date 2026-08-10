@@ -63,9 +63,7 @@ fun PosterCard2(series: SeriesUiModel, onClick: () -> Unit, onPlayClick: () -> U
             elevation = CardDefaults.cardElevation(
                 defaultElevation = 8.dp
             ),
-            //border = BorderStroke(width = 5.dp, color = VMocha.Blue),
             modifier = Modifier
-                //.padding(16.dp, 16.dp, 0.dp, 0.dp)
                 .height(225.dp)
                 .width(150.dp).clickable(onClick=onClick)
         ) {
@@ -74,13 +72,13 @@ fun PosterCard2(series: SeriesUiModel, onClick: () -> Unit, onPlayClick: () -> U
             ) {
                 Card(
                     shape = RoundedCornerShape(20, 20, 0, 0),
-                    border = BorderStroke(width = 2.dp, color = VMocha.Blue),
+                    border = BorderStroke(width = 1.dp, color = VMocha.Blue),
                     modifier = Modifier
                         .padding(0.dp, 0.dp, 0.dp, 20.dp)
                         .fillMaxSize()
                 ) {
                     AsyncImage(
-                        model = series.poster?.uri,//backdroup image tobe changed
+                        model = series.poster?.uri,
                         contentDescription = "thumb",
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
@@ -170,7 +168,6 @@ fun MoviePosterCard2(movies: MovieUiModel, onClick: () -> Unit, onPlayClick: () 
             elevation = CardDefaults.cardElevation(
                 defaultElevation = 8.dp
             ),
-            //border = BorderStroke(width = 5.dp, color = VMocha.Blue),
             modifier = Modifier
                 //.padding(16.dp, 16.dp, 0.dp, 0.dp)
                 .height(225.dp)
@@ -181,7 +178,7 @@ fun MoviePosterCard2(movies: MovieUiModel, onClick: () -> Unit, onPlayClick: () 
             ) {
                 Card(
                     shape = RoundedCornerShape(20, 20, 0, 0),
-                    border = BorderStroke(width = 2.dp, color = VMocha.Blue),
+                    border = BorderStroke(width = 1.dp, color = VMocha.Blue),
                     modifier = Modifier
                         .padding(0.dp, 0.dp, 0.dp, 20.dp)
                         .fillMaxSize()
@@ -215,7 +212,6 @@ fun MoviePosterCard2(movies: MovieUiModel, onClick: () -> Unit, onPlayClick: () 
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier
                             .fillMaxSize()
-                            //.basicMarquee()
                             .padding(start = 30.dp, top = 10.dp, end = 5.dp),
                         maxLines = 1,
                         textAlign = TextAlign.Center

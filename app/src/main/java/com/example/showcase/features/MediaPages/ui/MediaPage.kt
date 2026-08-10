@@ -281,17 +281,10 @@ fun MediaPage(navController: NavHostController,Show : String) {
                                 }
                             )
                         }
-//                        if (row.size == 1) {
-//                            Spacer(Modifier.width(150.dp))
-//                        }
                     }
                 }
             }
-
-
         }
-
-
     }
 
 }
@@ -346,7 +339,7 @@ fun AnimatedBackdrop(duraction: Int, modifier: Modifier, image: Any?) {
 }
 
 
-//@Preview(showSystemUi = false, showBackground = true)
+
 @Composable
 fun PosterCard3(media: MediaCardUiModel, onClick: () -> Unit, onPlayClick: () -> Unit) {
     val scale by rememberInfiniteTransition(label = "").animateFloat(
@@ -368,7 +361,6 @@ fun PosterCard3(media: MediaCardUiModel, onClick: () -> Unit, onPlayClick: () ->
             elevation = CardDefaults.cardElevation(
                 defaultElevation = 8.dp
             ),
-            //border = BorderStroke(width = 5.dp, color = VMocha.Blue),
             modifier = Modifier
                 .height(190.dp)
                 .width(125.dp)
@@ -381,7 +373,7 @@ fun PosterCard3(media: MediaCardUiModel, onClick: () -> Unit, onPlayClick: () ->
             ) {
                 Card(
                     shape = RoundedCornerShape(20, 20, 0, 0),
-                    border = BorderStroke(width = 2.dp, color = VMocha.Blue),
+                    border = BorderStroke(width = 1.dp, color = VMocha.Blue),
                     modifier = Modifier
                         .padding(0.dp, 0.dp, 0.dp, 20.dp)
                         .fillMaxSize()
@@ -455,8 +447,6 @@ fun PosterCard3(media: MediaCardUiModel, onClick: () -> Unit, onPlayClick: () ->
     }
 }
 
-
-//@Preview
 @Composable
 fun HeroCarousel2(
     media: List<MediaCardUiModel>,
@@ -477,7 +467,8 @@ fun HeroCarousel2(
             },
             medias = media[page],
             onPlay = { },
-            info = media[page].plot.toString())
+            info = media[page].plot.toString()
+        )
     }
 }
 
@@ -516,7 +507,7 @@ private fun Herocard(
             .background(shape = RoundedCornerShape(20.dp), color = VMocha.Crust)
             .clickable(onClick = onClick)
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize().clip(shape = RoundedCornerShape(20.dp))) {
             AnimatedBackdrop(
                 image = medias.backdrop,
                 duraction = 1500,
@@ -552,7 +543,6 @@ private fun Herocard(
                                 maxLines = 1,
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.ExtraBold,
-                                // modifier = Modifier.fillMaxWidth()
                             )
                         }
                     }

@@ -1,6 +1,9 @@
 package com.example.showcase.features.Player.ui
 
+import android.app.Activity
+import android.content.Context
 import android.content.res.Configuration
+import android.media.AudioManager
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
@@ -13,6 +16,10 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.awaitDragOrCancellation
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.awaitTouchSlopOrCancellation
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
@@ -39,13 +46,16 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -59,7 +69,9 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -85,6 +97,7 @@ import com.example.showcase.ui.Navigation.PlayerGraph
 import com.example.showcase.ui.Navigation.PlayerType
 import com.example.showcase.ui.Theme.VMocha
 import kotlinx.coroutines.delay
+import kotlin.math.roundToInt
 
 
 //@Preview(showBackground = true, showSystemUi = true)
@@ -241,9 +254,10 @@ fun Player(
 ) {
     val state by playerViewModel.state.collectAsState()
     val playerEngine by playerViewModel.playerEngine.collectAsState()
-    var controlsVisible by remember<MutableState<Boolean>> {
-        mutableStateOf(true)
-    }
+    var controlsVisible by remember<MutableState<Boolean>> { mutableStateOf(true) }
+    var showAction by remember<MutableState<Boolean>> { mutableStateOf(false) }
+    var actionText by  remember { mutableStateOf("") }
+
     LaunchedEffect(controlsVisible, state.isPlaying) {
         if (!isfullscreen) controlsVisible = false //if Player is in Vertical
         if ((controlsVisible && state.isPlaying)) {
@@ -251,6 +265,14 @@ fun Player(
             controlsVisible = false
         }
     }
+    LaunchedEffect(showAction){
+        if (showAction) {
+            delay(100)
+            showAction = false
+            actionText = ""
+        }
+    }
+
     Box(
         modifier = modifier
     ) {
@@ -303,32 +325,15 @@ fun Player(
             )
         }
         //^^controls
-        Box(
-            Modifier
-                .fillMaxHeight(0.7f)
-                .fillMaxWidth(0.75f)
-                .align(Alignment.Center)
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onTap = { controlsVisible = !controlsVisible },
-                        onDoubleTap = { offset ->
-                            if (offset.x < size.width / 2) {
-                                // Left half
-                                when (playerEngine) {
-                                    PlayerEngine.EXO -> PlayerGraph.playerManager.seekBackward()
-                                    PlayerEngine.VLC -> PlayerGraph.vlcPlayerManager.seekBackward()
-                                }
-                            } else {
-                                // Right half
-                                when (playerEngine) {
-                                    PlayerEngine.EXO -> PlayerGraph.playerManager.seekForward()
-                                    PlayerEngine.VLC -> PlayerGraph.vlcPlayerManager.seekForward()
-                                }
-                            }
-                        }
-                    )
-                }
+        VideoGestureControls(
+            playerEngine = playerEngine,
+            controlsVisible = controlsVisible,
+            onControlsVisibilityChanged = {
+               controlsVisible = !controlsVisible
+            },
+            modifier = Modifier.align(Alignment.Center)
         )
+        //^^ Ges Controls
         AnimatedVisibility(
             visible = controlsVisible && !overlayVisible,
             Modifier.align(Alignment.Center),
@@ -345,9 +350,6 @@ fun Player(
         }
     }
 }
-
-
-//@Preview
 @Composable
 fun EpPanel(
     playlist: List<PlayerMedia>,
@@ -590,6 +592,7 @@ fun toSeconds(ms: Long): Long {
 
     return totalSeconds //total seconds
 }
+
 @Composable
 fun SeekBar(
     progress: Float,
@@ -598,77 +601,82 @@ fun SeekBar(
     modifier: Modifier = Modifier
 ) {
     var width by remember { mutableStateOf(1f) }
-    var isDragging by remember {
-        mutableStateOf(false)
-    }
-
+    var isDragging by remember { mutableStateOf(false) }
     var dragProgress by remember {
         mutableStateOf(progress)
     }
-
     val animatedProgress by animateFloatAsState(
-        targetValue = progress,
+        targetValue = if (isDragging) dragProgress else progress,
         animationSpec = tween(300),
         label = ""
     )
-
     LaunchedEffect(progress) {
-
         if (!isDragging) {
             dragProgress = progress
         }
     }
-
     Box(
         modifier = modifier
             .height(20.dp)
-
             .onSizeChanged {
                 width = it.width.toFloat()
             }
-
             .pointerInput(Unit) {
+                awaitEachGesture {
+                    val down = awaitFirstDown()
 
-                detectDragGestures(
+                    // Check if this is a tap or drag
+                    val startX = down.position.x
 
-                    onDragStart = { offset ->
+                    val drag = awaitTouchSlopOrCancellation(
+                        down.id
+                    ) { change, _ ->
+                        change.consume()
+                    }
 
+                    if (drag == null) {
+                        // TAP
+                        val newProgress =
+                            (startX / width).coerceIn(0f, 1f)
+
+                        dragProgress = newProgress
+                        onProgressChanged(newProgress)
+                        onSeekFinished(newProgress)
+
+                    } else {
+                        // DRAG
                         isDragging = true
 
-                        dragProgress = (offset.x / width).coerceIn(0f, 1f)
+                        var current = drag
 
-                        onProgressChanged(
-                            dragProgress
-                        )
-                    },
+                        while (current != null) {
+                            val newProgress =
+                                (current.position.x / width)
+                                    .coerceIn(0f, 1f)
 
-                    onDragEnd = {
+                            dragProgress = newProgress
+                            onProgressChanged(newProgress)
+
+                            current = awaitDragOrCancellation(
+                                current.id
+                            )
+                        }
 
                         isDragging = false
 
-                        onSeekFinished(
-                            dragProgress
-                        )
+                        onSeekFinished(dragProgress)
                     }
-
-                ) { change, _ ->
-
-                    val newProgress = (change.position.x / width).coerceIn(0f, 1f)
-
-                    dragProgress = newProgress
-
-                    onProgressChanged(
-                        newProgress
-                    )
                 }
-            }) {
+            }
+    ) {
 
         // Background
         Box(
             Modifier
                 .fillMaxSize()
                 .background(
-                    VMocha.Surface1, RoundedCornerShape(20.dp)
+                    VMocha.Surface1,
+                    RoundedCornerShape(20.dp)
                 )
         )
 
@@ -678,7 +686,8 @@ fun SeekBar(
                 .fillMaxWidth(animatedProgress)
                 .fillMaxHeight()
                 .background(
-                    VMocha.Lavender, RoundedCornerShape(20.dp)
+                    VMocha.Lavender,
+                    RoundedCornerShape(topStart = 20.dp, bottomStart = 20.dp)
                 )
         )
 
@@ -687,13 +696,301 @@ fun SeekBar(
             Modifier
                 .offset {
                     IntOffset(
-                        ((width - 20.dp.toPx()) * animatedProgress).toInt(), 0
+                        ((width - 20.dp.toPx()) * animatedProgress)
+                            .toInt(),
+                        0
                     )
                 }
                 .size(20.dp)
                 .background(
-                    VMocha.Blue, CircleShape
+                    VMocha.Blue,
+                    CircleShape
                 )
         )
+    }
+}
+
+@Composable
+fun VideoGestureControls(
+    playerEngine: PlayerEngine,
+    controlsVisible: Boolean,
+    onControlsVisibilityChanged: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    val activity = context as? Activity
+    val audioManager = remember {
+        context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+    }
+    var volumeProgress by remember {
+        mutableFloatStateOf(
+            audioManager.getStreamVolume(
+                AudioManager.STREAM_MUSIC
+            ).toFloat() /
+                    audioManager.getStreamMaxVolume(
+                        AudioManager.STREAM_MUSIC
+                    ).toFloat()
+        )
+    }
+
+    var brightnessProgress by remember {
+
+        mutableFloatStateOf(
+            activity?.window?.attributes?.screenBrightness
+                ?.takeIf { it >= 0f }
+                ?: 0.5f
+        )
+    }
+
+    var showAction by remember {
+        mutableStateOf(false)
+    }
+
+    var actionText by remember {
+        mutableStateOf("")
+    }
+
+    var actionProgress by remember {
+        mutableFloatStateOf(0f)
+    }
+
+    LaunchedEffect(showAction) {
+
+        if (showAction) {
+           delay(700)
+            showAction = false
+        }
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxHeight(0.7f)
+            .fillMaxWidth(0.75f)
+            .pointerInput(Unit) {
+
+                // TAP + DOUBLE TAP
+                detectTapGestures(
+
+                    onTap = {
+                        onControlsVisibilityChanged(true)
+                    },
+
+                    onDoubleTap = { offset ->
+
+                        if (offset.x < size.width / 2) {
+
+                            // LEFT → SEEK BACKWARD
+
+                            showAction = true
+                            actionText = "<<10"
+                            actionProgress = 0f
+
+                            when (playerEngine) {
+
+                                PlayerEngine.EXO -> {
+                                    PlayerGraph
+                                        .playerManager
+                                        .seekBackward()
+                                }
+
+                                PlayerEngine.VLC -> {
+                                    PlayerGraph
+                                        .vlcPlayerManager
+                                        .seekBackward()
+                                }
+                            }
+
+                        } else {
+
+                            // RIGHT → SEEK FORWARD
+
+                            showAction = true
+                            actionText = "10>>"
+                            actionProgress = 0f
+
+                            when (playerEngine) {
+
+                                PlayerEngine.EXO -> {
+                                    PlayerGraph
+                                        .playerManager
+                                        .seekForward()
+                                }
+
+                                PlayerEngine.VLC -> {
+                                    PlayerGraph
+                                        .vlcPlayerManager
+                                        .seekForward()
+                                }
+                            }
+                        }
+                    }
+                )
+            }
+            .pointerInput(Unit) {
+
+                // -----------------------------------------
+                // VERTICAL DRAG
+                // -----------------------------------------
+
+                detectDragGestures(
+
+                    onDragStart = { offset ->
+
+                        val isLeft =
+                            offset.x < size.width / 2
+
+                        showAction = true
+
+                        actionText =
+                            if (isLeft) "☀" else "🔊"
+
+                        actionProgress =
+                            if (isLeft) {
+                                brightnessProgress
+                            } else {
+                                volumeProgress
+                            }
+                    },
+
+                    onDragEnd = {
+
+                        showAction = false
+                    },
+
+                    onDragCancel = {
+
+                        showAction = false
+                    }
+
+                ) { change, dragAmount ->
+
+                    change.consume()
+
+                    val isLeft =
+                        change.position.x < size.width / 2
+
+
+                    val sensitivity = 0.005f
+
+                    if (isLeft) {
+
+                        // ---------------------------------
+                        // BRIGHTNESS
+                        // ---------------------------------
+
+                        brightnessProgress =
+                            (
+                                    brightnessProgress -
+                                            dragAmount.y * sensitivity
+                                    ).coerceIn(0f, 1f)
+
+                        actionProgress =
+                            brightnessProgress
+
+                        actionText = "☀"
+
+                        activity?.window?.attributes =
+                            activity.window.attributes.apply {
+
+                                screenBrightness =
+                                    brightnessProgress
+                            }
+
+                    } else {
+
+                        // ---------------------------------
+                        // VOLUME
+                        // ---------------------------------
+
+                        volumeProgress =
+                            (
+                                    volumeProgress -
+                                            dragAmount.y * sensitivity
+                                    ).coerceIn(0f, 1f)
+
+                        actionProgress =
+                            volumeProgress
+
+                        actionText = "🔊"
+
+                        val maxVolume =
+                            audioManager.getStreamMaxVolume(
+                                AudioManager.STREAM_MUSIC
+                            )
+
+                        val newVolume =
+                            (
+                                    volumeProgress *
+                                            maxVolume
+                                    )
+                                .roundToInt()
+                                .coerceIn(
+                                    0,
+                                    maxVolume
+                                )
+
+                        audioManager.setStreamVolume(
+                            AudioManager.STREAM_MUSIC,
+                            newVolume,
+                            0
+                        )
+                    }
+                }
+            }
+    ) {
+
+        // GESTURE INDICATOR
+        if (showAction && !controlsVisible) {
+
+            Box(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .background(
+                        VMocha.Crust.copy(alpha = 0.5f),
+                        RoundedCornerShape(16.dp)
+                    )
+                    .padding(
+                        horizontal = 24.dp,
+                        vertical = 18.dp
+                    )
+            ) {
+
+                Column(
+                    horizontalAlignment =
+                        Alignment.CenterHorizontally
+                ) {
+
+                    Text(
+                        text = actionText,
+                        textAlign = TextAlign.Center,
+                        fontWeight = FontWeight.Bold,
+                        color = VMocha.Text,
+                        fontSize = 28.sp
+                    )
+
+                    Spacer(
+                        Modifier.height(8.dp)
+                    )
+
+                    if (
+                        actionText == "☀" ||
+                        actionText == "🔊"
+                    ) {
+
+                        LinearProgressIndicator(
+                            progress = {
+                                actionProgress
+                            },
+                            color = VMocha.Lavender,
+                            strokeCap = ProgressIndicatorDefaults.LinearStrokeCap,
+                            trackColor = VMocha.Mantle ,
+                            modifier = Modifier
+                                .width(120.dp)
+                                .height(5.dp),
+                        )
+                    }
+                }
+            }
+        }
     }
 }

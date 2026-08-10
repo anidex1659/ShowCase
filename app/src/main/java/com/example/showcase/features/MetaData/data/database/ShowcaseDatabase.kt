@@ -41,7 +41,7 @@ import com.example.showcase.features.MetaData.data.database.entity.series.Series
 
 
     ],
-    version = 12 //added settings
+    version = 13 //added Custom Tm-dbID
 )
 abstract class ShowcaseDatabase
     : RoomDatabase() {

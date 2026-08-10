@@ -25,8 +25,6 @@ class PlayerRepository(
 
     ) {
 
-
-
     suspend fun getSeriesPlayback(
         seriesId: Long
     ): SeriesPlaybackData? {
@@ -99,7 +97,6 @@ class PlayerRepository(
             type = MediaType.MOVIE,
             title = movie.movie.title,
             videoUri = movie.movie.filePath,
-
             poster =
                 movie.artwork.firstOrNull {
                     it.type=="poster"
@@ -114,10 +111,6 @@ class PlayerRepository(
             resume =playback?.position ?: 0L
         )
     }
-
-
-
-
     suspend fun savePlayback(
         state: PlayerState
     ) {
@@ -145,17 +138,11 @@ class PlayerRepository(
                 } else {
 
                     val entity = PlaybackHistoryEntity(
-
                         id = existing?.id ?: 0,
-
                         mediaId = media.id,
-
                         mediaType = "episode",
-
                         position = state.currentPosition,
-
                         duration = state.duration,
-
                         lastPlayed = System.currentTimeMillis()
                     )
 
@@ -173,15 +160,10 @@ class PlayerRepository(
                     dao.getMoviePlayback(media.id)
 
                 val entity = MoviePlaybackEntity(
-
                     id = existing?.id ?: 0,
-
                     movieId = media.id,
-
                     position = state.currentPosition,
-
                     duration = state.duration,
-
                     lastPlayed = System.currentTimeMillis()
                 )
 
@@ -214,10 +196,10 @@ class PlayerRepository(
             "movie = $media"
         )
 
-        Log.d(
-            "Anidex_PlayerRepo",
-            "metadata = $metadata"
-        )
+//        Log.d(
+//            "Anidex_PlayerRepo",
+//            "metadata = $metadata"
+//        )
 
         return SeriesInfoUiModel(
 
@@ -250,23 +232,18 @@ class PlayerRepository(
                 movie.movie.id,
                 MovieMetadata.serializer()
             )
-
         Log.d(
             "Anidex_PlayerRepo",
             "movie = $movie"
         )
-
-        Log.d(
-            "Anidex_PlayerRepo",
-            "metadata = $metadata"
-        )
+//        Log.d(
+//            "Anidex_PlayerRepo",
+//            "metadata = $metadata"
+//        )
 
         return MovieInfoUiModel(
-
             movie = movie,
-
             metadata = metadata,
-
             playback = movie.playback
         )
     }

@@ -16,6 +16,11 @@ data class SettingsEntity(
 	// UI
 	val colorPalate : String="Catppuccin",
 
+	// TMDB
+	val useCustomTmdbKey: Boolean = false,
+	val apiValidated: Boolean=false,
+	val customTmdbApiKey: String = "",
+
 	// Playback
 	val seekAmount : Long =10_000L,
 	val playerEngine: String ="EXO",

@@ -3,6 +3,7 @@ package com.example.showcase.core.SettingesManger
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.util.UnstableApi
+import androidx.xr.arcore.VpsAvailabilityAvailable
 import com.example.showcase.features.MetaData.data.database.dao.SettingsDao
 import com.example.showcase.features.MetaData.data.database.entity.SettingsEntity
 import com.example.showcase.features.Player.PlayerViewModel.PlayerEngine
@@ -34,6 +35,50 @@ object SettingsManager {
 
 	val settings: StateFlow<SettingsEntity>
 		get() = _settings.asStateFlow()
+
+
+	//Tm-dbApi
+	val tmdbApiAvailable: Boolean
+		get() = _settings.value.useCustomTmdbKey
+
+	val apiValidated: Boolean
+		get() = _settings.value.apiValidated
+
+	val tmdbApi: String
+		get() = _settings.value.customTmdbApiKey
+
+	fun set_tmdbApi (
+		api: String
+	)
+	{
+		updateSettings {
+			copy(
+				customTmdbApiKey = api
+			)
+		}
+	}
+
+	fun set_tmdbApiValidaty (
+		valid: Boolean
+	)
+	{
+		updateSettings {
+			copy(
+				apiValidated=valid
+			)
+		}
+	}
+
+	fun set_tmdbApiAvailable (
+		available: Boolean
+	)
+	{
+		updateSettings {
+			copy(
+				useCustomTmdbKey = available
+			)
+		}
+	}
 
 
 

@@ -1,6 +1,7 @@
 package com.example.showcase.features.MetaData.data.remote.api
 
 import com.example.showcase.BuildConfig
+import com.example.showcase.core.SettingesManger.SettingsManager
 import com.example.showcase.features.MetaData.data.remote.model.TmdbImagesResponse
 import com.example.showcase.features.MetaData.data.remote.model.TmdbMovieDetails
 import com.example.showcase.features.MetaData.data.remote.model.TmdbMovieSearchResponse
@@ -57,7 +58,7 @@ interface TmdbApi {
         title: String,
 
         @Query("api_key")
-        apiKey: String = BuildConfig.TMDB_API_KEY
+        apiKey: String = if (SettingsManager.tmdbApiAvailable) SettingsManager.tmdbApi else BuildConfig.TMDB_API_KEY
 
     ): TmdbMovieSearchResponse
 
@@ -69,7 +70,7 @@ interface TmdbApi {
         movieId: Int,
 
         @Query("api_key")
-        apiKey: String = BuildConfig.TMDB_API_KEY
+        apiKey: String = if (SettingsManager.tmdbApiAvailable) SettingsManager.tmdbApi else BuildConfig.TMDB_API_KEY
 
     ): TmdbMovieDetails
 
@@ -80,7 +81,7 @@ interface TmdbApi {
         movieId: Int,
 
         @Query("api_key")
-        apiKey: String = BuildConfig.TMDB_API_KEY,
+        apiKey: String = if (SettingsManager.tmdbApiAvailable) SettingsManager.tmdbApi else BuildConfig.TMDB_API_KEY,
 
         @Query("include_image_language")
         languages: String = "en,null"

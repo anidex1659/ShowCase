@@ -1,6 +1,7 @@
 package com.example.showcase.features.Library.ui
 
 import android.app.Activity
+import android.widget.Toast
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -29,11 +30,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -41,7 +44,9 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.showcase.core.ProgressManager.ProgressManager
+import com.example.showcase.core.ProgressManager.ProgressType
 import com.example.showcase.core.ProgressManager.ScanProgress
+import com.example.showcase.core.SettingesManger.SettingsManager
 import com.example.showcase.features.Library.repository.LibraryRepository
 
 //import com.example.showcase.features.MetaData.data.repository.LibraryRepository
@@ -67,6 +72,8 @@ import com.example.showcase.features.MetaData.data.scanner.Detectors.SeriesDetec
 import com.example.showcase.features.Player.model.storage.ArtworkStorageManager
 import com.example.showcase.features.Player.model.storage.MetadataJsonManager
 import com.example.showcase.features.Player.model.storage.MovieMetadataJsonManager
+import com.example.showcase.features.Settings.ui.Settings
+import com.example.showcase.features.Settings.ui.TmdbApiKeyDialog
 import com.example.showcase.features.SplashScreen.ui.LoadingPopup
 import com.example.showcase.ui.Navigation.HomeRoute
 import com.example.showcase.ui.Navigation.SettingsRoute
@@ -255,25 +262,54 @@ fun LibraryScreen(navController: NavHostController) {
             }
         }
     }
+    LoadingPopup(
+        visible = progress.visible && progress.type == ProgressType.SCANNING,
+        progress.title
+    )
 
+    var apiKey by rememberSaveable {
+        mutableStateOf(SettingsManager.tmdbApi)
+    }
 
-    LoadingPopup(progress.visible,progress.title)
+    val uriHandler = LocalUriHandler.current
+
+    var showTmdbDilog by remember { mutableStateOf(false)  }
+    if (!SettingsManager.tmdbApiAvailable && !showTmdbDilog) TmdbApiKeyDialog (
+        apiKey = apiKey,
+
+        apiAvailable = SettingsManager.tmdbApiAvailable,
+
+        apiValidated = SettingsManager.apiValidated,
+
+        onApiKeyChange = { apiKey = it },
+
+        onOpenTmdb = { uriHandler.openUri("https://www.themoviedb.org/") },
+
+        onDismiss = {showDialog=true},
+
+        onSave = {
+            SettingsManager.set_tmdbApi(
+                apiKey.trim()
+            )
+            SettingsManager.set_tmdbApiAvailable(
+                true
+            )
+            SettingsManager.set_tmdbApiValidaty(
+                false
+            )
+            showDialog=true
+            Toast.makeText(context,"Custom Tm-db API Saved", Toast.LENGTH_SHORT).show()
+        }
+    )
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(VMocha.Crust)
     ) {
-
-
         Spacer(
             modifier = Modifier.height(10.dp)
         )
-
-//        Text(
-//            text = "Libraries: ${uiState.libraries.size}"
-//        )
-
         LibraryPanel(
             libraries = uiState.libraries,
             onScanLibrary = { library ->
@@ -285,7 +321,6 @@ fun LibraryScreen(navController: NavHostController) {
             },
             progress
         )
-
         Spacer(
             modifier = Modifier.height(15.dp)
         )
@@ -306,7 +341,7 @@ fun LibraryScreen(navController: NavHostController) {
     AddLibraryDialog(
         showDialog = showDialog, onDismiss = {
             showDialog = false
-        })
+        },viewModel)
 }
 
 

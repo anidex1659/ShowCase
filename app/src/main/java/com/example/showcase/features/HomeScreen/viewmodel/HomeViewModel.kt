@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.showcase.features.HomeScreen.repo.HomeRepository
 import com.example.showcase.features.HomeScreen.model.HomeUiState
+import com.example.showcase.features.HomeScreen.model.RecentPlaybackUiModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,7 +16,18 @@ class HomeViewModel(
     private val repository: HomeRepository
 
 ) : ViewModel() {
+    private val _recentlyPlayed =
+        MutableStateFlow<RecentPlaybackUiModel?>(null)
 
+    val recentlyPlayed: StateFlow<RecentPlaybackUiModel?> =
+        _recentlyPlayed
+
+    fun loadRecentlyPlayed() {
+        viewModelScope.launch {
+            _recentlyPlayed.value =
+                repository.getRecentlyPlayed()
+        }
+    }
     private val _uiState =
         MutableStateFlow(
             HomeUiState()

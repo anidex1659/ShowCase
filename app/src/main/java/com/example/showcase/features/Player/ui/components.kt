@@ -497,7 +497,7 @@ fun PlayerSettings(onDismiss: () -> Unit) {
 		Card(
 			Modifier
 				.fillMaxHeight(0.9f)
-				.background(VMocha.Crust, RoundedCornerShape(20.dp))
+				.background(VMocha.Crust.copy(alpha = 0.5f), RoundedCornerShape(20.dp))
 		)
 		{
 			Column(

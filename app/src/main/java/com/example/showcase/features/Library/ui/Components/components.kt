@@ -133,12 +133,10 @@ fun LibraryCard(
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth()
-                //horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 Text(
                     modifier = Modifier.fillMaxWidth(0.9f),
                 text = library.library.name,
-
                 color = VMocha.Text,
 
                 fontSize = 25.sp,

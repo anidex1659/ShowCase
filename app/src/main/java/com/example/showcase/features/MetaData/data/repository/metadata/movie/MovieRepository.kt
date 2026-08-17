@@ -32,6 +32,16 @@ class MovieRepository(
         return buildMovieUiModel(movie)
     }
 
+    suspend fun getRecentlyPlayed(): MovieUiModel? {
+
+        val playback = dao
+            .getMoviePlaybackHistory()
+            .firstOrNull()
+            ?: return null
+
+        return getMovieById(playback.movieId)
+    }
+
     suspend fun getMovieByTitle(
         title: String
     ): MovieUiModel? {

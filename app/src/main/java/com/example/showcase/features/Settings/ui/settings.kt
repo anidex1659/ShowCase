@@ -121,6 +121,12 @@ fun Settings(navController: NavHostController) {
 				"ver 1",
 				color = VMocha.Subtext1.copy(0.5f),
 				fontSize = 12.sp,
+				modifier = Modifier.align(Alignment.TopEnd)
+			)
+			Text(
+				"Setting Take Affect After Relaunch",
+				color = VMocha.Subtext1.copy(0.5f),
+				fontSize = 8.sp,
 				modifier = Modifier.align(Alignment.BottomEnd)
 			)
 			IconButton(onClick = {

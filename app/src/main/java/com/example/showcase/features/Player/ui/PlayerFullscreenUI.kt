@@ -3,6 +3,7 @@ package com.example.showcase.features.Player.ui
 import android.app.Activity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -46,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -80,12 +83,9 @@ fun FullScreenPlayer(playerManager: PlayerManager, playerViewModel: PlayerViewMo
                      state: PlayerState
 ) {
     val context = LocalContext.current
-
     var overlayVisible by remember<MutableState<Boolean>> {
         mutableStateOf(false)
     }
-
-
 
     LaunchedEffect(overlayVisible, state.isPlaying) {
 
@@ -97,8 +97,6 @@ fun FullScreenPlayer(playerManager: PlayerManager, playerViewModel: PlayerViewMo
             overlayVisible = false
         }
     }
-
-
 
     // Hide system status bar and navigation bar when entering full screen
     DisposableEffect(Unit) {
@@ -188,7 +186,7 @@ fun FullScreenPlayer(playerManager: PlayerManager, playerViewModel: PlayerViewMo
             FullScreenOverlay({
               playerViewModel.togglePlayPause()
                 overlayVisible = false
-            }, playerInfoState, state)
+            }, playerInfoState, state , overlayVisible)
         }
 
     }
@@ -201,9 +199,36 @@ fun FullScreenPlayer(playerManager: PlayerManager, playerViewModel: PlayerViewMo
 fun FullScreenOverlay(
     Onclick: () -> Unit, playerInfoState: PlayerInfoState,
     state: PlayerState,
+    overlayVisible: Boolean,
 ) {
     var Plot: String = playerInfoState.series?.metadata?.plot.toString()
     if (state.media?.plot != "") Plot = state.media?.plot ?: ""
+
+    var startAnm by remember {
+        mutableStateOf(false)
+    }
+    LaunchedEffect(overlayVisible) {
+        if (overlayVisible){
+            delay(100)
+            startAnm=true
+        }
+    }
+    val imageScale by animateFloatAsState(
+        targetValue = if (startAnm) 1f else 0.4f,
+        animationSpec = tween(800),
+        label = "imageScale"
+    )
+    val imageElevation by animateDpAsState(
+        targetValue = if (startAnm) 20.dp else 6.dp,
+        animationSpec = tween(800),
+        label = "imageElevation"
+    )
+    val imageOffsetY by animateDpAsState(
+        targetValue = if (startAnm) (-8).dp else 0.dp,
+        animationSpec = tween(800),
+        label = "imageOffsetY"
+    )
+
     Box(
         Modifier
             .fillMaxSize()
@@ -221,10 +246,11 @@ fun FullScreenOverlay(
                 contentDescription = "",
                 modifier = Modifier
                     .fillMaxHeight(0.8f)
+                    .offset(y = imageOffsetY)
+                    .scale(imageScale)
                     .clip(RoundedCornerShape(20))
+                    .shadow(imageElevation, shape = RoundedCornerShape(20), ambientColor = VMocha.Lavender)
             )
-
-
             Column(
                 modifier = Modifier
                     .padding(start = 20.dp)
@@ -254,14 +280,15 @@ fun FullScreenOverlay(
                     )
                     playerInfoState.series?.metadata?.year?.toString()?.let {
                         Text(
-                            text = it + "|" + playerInfoState.series.metadata.rating,
+                            text = it + " | " + playerInfoState.series.metadata.rating,
                             fontWeight = FontWeight.Bold,
                             color = VMocha.Text,
                             fontSize = 20.sp
                         )
                     }
                     Text(
-                        text = state.media.title,
+                        text =
+                            if ((state.media.title == ("Episode" + state.media.episodeNumber))) state.media.title else "EP" + state.media.episodeNumber+ " | " + state.media.title,
                         fontWeight = FontWeight.Bold,
                         color = VMocha.Text,
                         fontSize = 20.sp
@@ -304,15 +331,10 @@ fun FullScreenOverlay(
                         maxLines = 5,
                         overflow = TextOverflow.Ellipsis
                     )
-
                 }
-
-
             }
-
         }
     }
-
 }
 
 
@@ -363,7 +385,7 @@ fun TopControllsV(
                     .fillMaxWidth()
                     .fillMaxHeight()
                     .background(
-                        VMocha.Crust, shape = RoundedCornerShape(20.dp)
+                        VMocha.Crust.copy(alpha = 0.5f), shape = RoundedCornerShape(20.dp)
                     )
                     .padding(top = 20.dp, start = 5.dp, end = 5.dp))
 
@@ -406,6 +428,8 @@ fun TopControllsV(
                     Text(
                         state.media?.title ?: " ",
                         color = VMocha.Text,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                         fontSize = 20.sp,
                         textAlign = TextAlign.Start
                     )
@@ -429,7 +453,6 @@ fun TopControllsV(
             IconButton(
                 onClick = {
                     settingDilog= true
-                    playerViewModel.pause()
                 }
             ) {
                 Icon(
@@ -531,7 +554,6 @@ fun TopControllsV(
 
                 onClick = {
                     EPDilog = !EPDilog
-                    playerViewModel.pause()
                 },
             ) {
                 Icon(

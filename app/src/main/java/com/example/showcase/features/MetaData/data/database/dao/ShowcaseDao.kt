@@ -20,6 +20,7 @@ import com.example.showcase.features.MetaData.data.database.entity.music.MusicPl
 import com.example.showcase.features.MetaData.data.database.entity.series.PlaybackHistoryEntity
 import com.example.showcase.features.MetaData.data.database.entity.series.SeriesEntity
 import com.example.showcase.features.MetaData.data.database.relation.LibraryComplete
+import com.example.showcase.features.MetaData.data.model.MovieUiModel
 
 @Dao
 interface ShowcaseDao {

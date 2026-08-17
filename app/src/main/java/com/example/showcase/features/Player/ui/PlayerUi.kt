@@ -6,6 +6,7 @@ import android.content.res.Configuration
 import android.media.AudioManager
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -14,6 +15,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.awaitDragOrCancellation
@@ -42,6 +44,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CardElevation
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -63,6 +66,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
@@ -83,6 +87,7 @@ import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.showcase.core.ProgressManager.ProgressManager
 import com.example.showcase.features.HomeScreen.ui.BootomBAR
+import com.example.showcase.features.Library.ui.Components.EpisodeRow
 import com.example.showcase.features.Player.PlayerCore.PlayerManager
 import com.example.showcase.features.Player.PlayerCore.VlcPlayerManager
 import com.example.showcase.features.Player.PlayerViewModel.PlayerEngine
@@ -395,8 +400,9 @@ fun EpPanel(
                     ), verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    state.media.title + " | E" + state.media.episodeNumber,
-                    color = VMocha.Text
+                    state.media.title + " | EP" + state.media.episodeNumber,
+                    color = VMocha.Text,
+                    modifier = Modifier.padding(5.dp)
                 )
                 Box(Modifier.fillMaxWidth()) {
                     IconButton(
@@ -492,24 +498,23 @@ fun EpPanel(
 //@Preview
 @Composable
 fun EpCard(media: PlayerMedia, selected: Boolean, onClick: () -> Unit) {
+    val elevaction by animateDpAsState(
+        targetValue = if (selected) 20.dp else 0.dp,
+        tween(1000)
+    )
     Card(
         onClick = onClick,
         colors = CardDefaults.cardColors(
-            containerColor =
-                if (selected)
-                    VMocha.Lavender
-                else
-                    VMocha.Mantle
+            containerColor = if (selected) VMocha.Lavender else VMocha.Mantle
         ),
+        border = if (selected) BorderStroke(2.dp, VMocha.Text) else BorderStroke(0.dp, color = Color.Transparent),
+        elevation = CardDefaults.cardElevation(defaultElevation = elevaction) ,
         modifier = Modifier
             .fillMaxWidth()
             .height(100.dp)
             .padding(10.dp, 5.dp, 10.dp, 5.dp)
     ) {
-        Row(
-
-        ) {
-
+        Row{
             AsyncImage(
                 model = media.backdrop,
                 contentDescription = "Ep_Thumb",
@@ -520,35 +525,49 @@ fun EpCard(media: PlayerMedia, selected: Boolean, onClick: () -> Unit) {
                     .clip(RoundedCornerShape(20.dp)),
                 contentScale = ContentScale.Crop
             )
-
-            //Spacer(Modifier.padding(horizontal = 10.dp))
-
             Column(
                 Modifier
                     .fillMaxSize()
                     .padding(start = 0.dp, top = 10.dp, end = 5.dp, bottom = 10.dp)
             ) {
-                Text(
-                    media.title,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = VMocha.Text,
-                    overflow = TextOverflow.Ellipsis,
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
-                        .fillMaxWidth(),
-                    maxLines = 2,
-                    textAlign = TextAlign.Start
+                        .fillMaxWidth()
+                ) {
+                    if ( media.title != ("Episode " + media.episodeNumber) && !selected) {
+                        Text(
+                            "${media.episodeNumber}> ",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.ExtraLight,
+                            color = VMocha.Subtext0,
+                            overflow = TextOverflow.Ellipsis,
+                            maxLines = 1,
+                            textAlign = TextAlign.Start
+                        )
+                    }
+                    Text(
+                        media.title,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = VMocha.Text,
+                        overflow = TextOverflow.Ellipsis,
+                        maxLines = 2,
+                        textAlign = TextAlign.Start
 
-                )
+                    )
+                }
                 Text(
                     media.plot,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Light,
-                    color = VMocha.Subtext0.copy(0.5f),
+                    color =
+                        if (selected) VMocha.Text else VMocha.Subtext0,
                     style = TextStyle(
                         lineHeight = 12.sp
                     ),
                     maxLines = 4,
+                    overflow = TextOverflow.Ellipsis,
                     modifier = Modifier
                         .fillMaxSize(),
                     textAlign = TextAlign.Start

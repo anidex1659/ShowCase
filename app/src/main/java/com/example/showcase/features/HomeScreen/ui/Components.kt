@@ -1,8 +1,8 @@
 package com.example.showcase.features.HomeScreen.ui
 
-import android.text.Layout
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -10,10 +10,8 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandIn
-import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -27,7 +25,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.pager.HorizontalPager
@@ -41,7 +38,6 @@ import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.SubdirectoryArrowRight
-import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -60,28 +56,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
-import com.example.showcase.R
-import com.example.showcase.core.ProgressManager.ProgressManager
 import com.example.showcase.core.ProgressManager.ProgressType
 import com.example.showcase.core.ProgressManager.ScanProgress
+import com.example.showcase.features.HomeScreen.model.HeroUiModel
 import com.example.showcase.features.HomeScreen.model.HomeUiState
 import com.example.showcase.features.InfoPage.ui.MoviePosterCard2
 import com.example.showcase.features.InfoPage.ui.PosterCard2
 import com.example.showcase.features.MetaData.data.model.MovieUiModel
 import com.example.showcase.features.MetaData.data.model.SeriesUiModel
-import com.example.showcase.features.Player.PlayerCore.PlayerManager
 import com.example.showcase.features.Player.PlayerViewModel.PlayerViewModel
 import com.example.showcase.features.Player.model.MediaType
-import com.example.showcase.features.Player.ui.VlcVideoPlayer
 import com.example.showcase.ui.Navigation.HomeRoute
 import com.example.showcase.ui.Navigation.LibraryRoute
 import com.example.showcase.ui.Navigation.MediaRoute
@@ -93,23 +83,19 @@ import com.example.showcase.ui.Navigation.SeriesInfoRoute
 import com.example.showcase.ui.Navigation.SettingsRoute
 import com.example.showcase.ui.Theme.VMocha
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 //@Preview
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HeroCarousel(
-    featured: List<SeriesUiModel>,
+    featured: List<HeroUiModel>,
     navController: NavHostController
 ) {
     if (featured.isEmpty()) return
-
     val pagerState = rememberPagerState(
         initialPage = 0,
         pageCount = { featured.size }
     )
-
-    // Auto-slide every 5 seconds
     LaunchedEffect(pagerState, featured.size) {
         while (true) {
             delay(5000L)
@@ -117,26 +103,38 @@ fun HeroCarousel(
             val nextPage =
                 (pagerState.currentPage + 1) % featured.size
 
-            pagerState.animateScrollToPage(
-                page = nextPage
-            )
+            pagerState.animateScrollToPage(nextPage)
         }
     }
-
     HorizontalPager(
         state = pagerState
     ) { page ->
-
-        HeroCard(
-            series = featured[page],
-            onClick = {
-                navController.navigate(
-                    SeriesInfoRoute(
-                        featured[page].series.id
-                    )
+        when (val item = featured[page]) {
+            is HeroUiModel.Series -> {
+                HeroCard(
+                    series = item.item,
+                    onClick = {
+                        navController.navigate(
+                            SeriesInfoRoute(
+                                item.item.series.id
+                            )
+                        )
+                    }
                 )
             }
-        )
+            is HeroUiModel.Movie -> {
+                MovieHeroCard(
+                    movie = item.item,
+                    onClick = {
+                        navController.navigate(
+                            MovieInfoRoute(
+                                item.item.movie.id
+                            )
+                        )
+                    }
+                )
+            }
+        }
     }
 }
 
@@ -145,8 +143,6 @@ fun HeroCarousel(
 fun HeroCard(
     onClick: () -> Unit, series: SeriesUiModel
 ) {
-
-
     Column {
 
         Card(
@@ -163,7 +159,7 @@ fun HeroCard(
         ) {
 
             AsyncImage(
-               model = series.backdrop?.uri,
+                model = series.backdrop?.uri,
                 contentDescription = null,
                 modifier = Modifier
                     .fillMaxSize()
@@ -177,10 +173,69 @@ fun HeroCard(
         )
 
         if(series.logo == null){
-            Text(series.series.title)
+            Text(series.series.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
         AsyncImage(
             model = series.logo?.uri,
+            contentDescription = "Series Logo",
+            alignment = Alignment.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(60.dp)
+                .padding(horizontal = 16.dp),
+            contentScale = ContentScale.Fit
+        )
+
+    }
+}
+
+
+
+@Composable
+fun MovieHeroCard(
+    onClick: () -> Unit, movie: MovieUiModel
+) {
+
+    val backdrop = movie.artwork.firstOrNull {
+        it.type == "backdrop"
+    }
+    val movielogo = movie.artwork.firstOrNull {
+        it.type == "logo"
+    }
+    Column {
+
+        Card(
+            onClick = {},
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(220.dp)
+                .padding(start = 20.dp, end = 20.dp)
+                .border(1.dp, VMocha.Blue, RoundedCornerShape(24.dp)),
+            shape = RoundedCornerShape(24.dp),
+            elevation = CardDefaults.cardElevation(
+                defaultElevation = 8.dp
+            )
+        ) {
+
+            AsyncImage(
+                model =backdrop?.uri,
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clickable { onClick() },
+                contentScale = ContentScale.Crop
+            )
+        }
+
+        Spacer(
+            modifier = Modifier.height(12.dp)
+        )
+
+        if(movielogo == null){
+            Text(movie.movie.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
+        AsyncImage(
+            model = movielogo?.uri,
             contentDescription = "Series Logo",
             alignment = Alignment.Center,
             modifier = Modifier
@@ -260,13 +315,14 @@ fun MoviePosterRow(
 }
 
 @Composable
-fun Panel(
+fun Panel( //home panel
     modifier: Modifier,
     uiState: HomeUiState,
     navController: NavHostController,
     progress: ScanProgress,
-    playerViewModel: PlayerViewModel
-) {  //home panel
+    playerViewModel: PlayerViewModel,
+    context: Context
+) {
     Box(
         modifier = modifier
     ) {
@@ -274,37 +330,38 @@ fun Panel(
             LazyColumn(
                 modifier = modifier.fillMaxSize()
             ) {
-
-                item {
-                    MediaSection(
-                        "Series",
-                        onClick = {
-                            navController.navigate(MediaRoute("Series"))
+                if (!uiState.trendingSeries.isEmpty()) {
+                    item {
+                        MediaSection(
+                            "Series",
+                            onClick = {
+                                navController.navigate(MediaRoute("Series"))
+                            }
+                        ) {
+                            PosterRow(
+                                uiState.trendingSeries,
+                                navController,
+                                playerViewModel
+                            )
                         }
-                    ) {
-                        PosterRow(
-                            uiState.trendingSeries,
-                            navController,
-                            playerViewModel
-                        )
                     }
                 }
-
-                item {
-                    MediaSection(
-                        "Movies",
-                        onClick = {
-                            navController.navigate(MediaRoute("Movies"))
+                if (!uiState.trendingMovies.isEmpty()) {
+                    item {
+                        MediaSection(
+                            "Movies",
+                            onClick = {
+                                navController.navigate(MediaRoute("Movies"))
+                            }
+                        ) {
+                            MoviePosterRow(
+                                uiState.trendingMovies,
+                                navController,
+                                playerViewModel
+                            )
                         }
-                    ) {
-                        MoviePosterRow(
-                            uiState.trendingMovies,
-                            navController,
-                            playerViewModel
-                        )
                     }
                 }
-
 
             }
 

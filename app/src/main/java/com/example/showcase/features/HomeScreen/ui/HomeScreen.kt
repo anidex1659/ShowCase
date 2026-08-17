@@ -50,6 +50,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.showcase.core.ProgressManager.ProgressManager
+import com.example.showcase.features.HomeScreen.model.RecentPlaybackUiModel
 import com.example.showcase.features.HomeScreen.repo.HomeRepository
 import com.example.showcase.features.HomeScreen.viewmodel.HomeViewModel
 import com.example.showcase.features.HomeScreen.viewmodel.HomeViewModelFactory
@@ -65,6 +66,8 @@ import com.example.showcase.features.Player.PlayerCore.repository.PlayerReposito
 import com.example.showcase.features.SplashScreen.ui.SplashScreenImg
 import com.example.showcase.ui.Navigation.LibraryRoute
 import com.example.showcase.ui.Navigation.PlayerGraph
+import com.example.showcase.ui.Navigation.PlayerRoute
+import com.example.showcase.ui.Navigation.PlayerType
 import com.example.showcase.ui.Theme.VMocha
 import kotlinx.coroutines.delay
 
@@ -119,15 +122,9 @@ import kotlinx.coroutines.delay
 
     val uiState by viewModel.uiState.collectAsState()
 
-
     val backgrounds = remember(uiState) {
 
         buildList {
-
-            // Series backdrops
-            addAll(
-                uiState.hero.mapNotNull { it.poster?.uri }
-            )
 
             addAll(
                 uiState.trendingSeries.mapNotNull { it.poster?.uri }
@@ -196,6 +193,12 @@ import kotlinx.coroutines.delay
         if (ready && dao.getLibraries().count() == 0) {
             navController.navigate(LibraryRoute)
         }
+    }
+
+    val recentlyPlayed by viewModel.recentlyPlayed.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.loadRecentlyPlayed()
     }
 
     // Hide system status bar and navigation bar when entering full screen
@@ -277,25 +280,25 @@ import kotlinx.coroutines.delay
                     Spacer(modifier = Modifier.height(10.dp))
 
                     Column{
-                        ContinueButton()
+                        ContinueButton(recentlyPlayed,navController)
                         //^^Continue button
 
                         Spacer(modifier = Modifier.height(10.dp))
 						Panel(
 							modifier =
 								Modifier
-									.weight(1f)
-									.fillMaxHeight()
-									.fillMaxWidth()
-									.clip(
-										RoundedCornerShape(
-											topStart = 20.dp,
-											topEnd = 20.dp
-										)
-									)
-									.background(color = VMocha.Mantle.copy(0.8f)),
+                                    .weight(1f)
+                                    .fillMaxHeight()
+                                    .fillMaxWidth()
+                                    .clip(
+                                        RoundedCornerShape(
+                                            topStart = 20.dp,
+                                            topEnd = 20.dp
+                                        )
+                                    )
+                                    .background(color = VMocha.Mantle.copy(0.8f)),
 							uiState = uiState,
-							navController, progress, playerViewModel
+							navController, progress, playerViewModel,context
 						)
 
                     }
@@ -324,7 +327,10 @@ import kotlinx.coroutines.delay
 
 //Continue Watching Button
 @Composable
-fun ContinueButton() {
+fun ContinueButton(
+    recentlyPlayed: RecentPlaybackUiModel?,
+    navController: NavHostController
+) {
 
     var expanded by remember {
         mutableStateOf(false)
@@ -353,9 +359,28 @@ fun ContinueButton() {
         modifier = Modifier.fillMaxWidth(),
         contentAlignment = Alignment.CenterEnd
     ) {
-
         Button(
-            onClick = {},
+            onClick = {
+                when (recentlyPlayed) {
+
+                is RecentPlaybackUiModel.Series -> {
+
+                    navController.navigate(
+                        PlayerRoute(recentlyPlayed.series.series.id, PlayerType.SERIES)
+                    )
+                }
+
+                is RecentPlaybackUiModel.Movie -> {
+
+                    navController.navigate(
+                        PlayerRoute(recentlyPlayed.movie.movie.id, PlayerType.MOVIE)
+                    )
+                }
+
+                null -> {
+                    // Nothing has been played yet
+                }
+            } },
             modifier = Modifier
                 .width(width)
                 .height(50.dp),   // Fixed height
@@ -364,7 +389,7 @@ fun ContinueButton() {
                 bottomStart = 10.dp
             ),
             colors = ButtonDefaults.buttonColors(
-                containerColor = VMocha.Lavender
+                containerColor = VMocha.Mantle
             ),
             contentPadding = PaddingValues(horizontal = 16.dp)
         ) {

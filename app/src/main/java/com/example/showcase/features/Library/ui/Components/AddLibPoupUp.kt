@@ -1,6 +1,7 @@
 package com.example.showcase.features.Library.ui.Components
 
 import android.content.Intent
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -28,6 +29,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.showcase.features.Library.viewmodel.LibraryViewModel
@@ -155,8 +157,10 @@ fun AddLibraryDialogContent(onDismiss: () -> Unit, viewModel: LibraryViewModel) 
                     ).forEach { type ->
 
                         FilterChip(
-                            colors = FilterChipDefaults.filterChipColors(selectedLabelColor = VMocha.Blue),
-
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedLabelColor = VMocha.Text,
+                                selectedContainerColor = VMocha.Blue
+                            ),
                             selected =
                                 selectedType == type,
 
@@ -176,15 +180,15 @@ fun AddLibraryDialogContent(onDismiss: () -> Unit, viewModel: LibraryViewModel) 
             }
 
             if (folderUri.isNotBlank()) {
-
                 Text(
                     text = folderUri,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
                     color = VMocha.Subtext0
                 )
             }
 
             Button(
-
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(VMocha.Lavender),
                 shape = RoundedCornerShape(20),
@@ -194,7 +198,8 @@ fun AddLibraryDialogContent(onDismiss: () -> Unit, viewModel: LibraryViewModel) 
 
             Button(
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(VMocha.Lavender),
+                enabled = folderUri.isNotBlank() && libraryName.isNotBlank() && selectedType.isNotBlank(),
+                colors = ButtonDefaults.buttonColors(VMocha.Lavender, disabledContainerColor = VMocha.Lavender.copy(0.2f)),
                 shape = RoundedCornerShape(20),
                 onClick = {
                     scope.launch {
@@ -215,6 +220,8 @@ fun AddLibraryDialogContent(onDismiss: () -> Unit, viewModel: LibraryViewModel) 
                             )
                         )
                         viewModel.loadLibraries()
+                        Toast.makeText(context,"Scanning Added Library", Toast.LENGTH_SHORT).show()
+                        viewModel.scanLibrary(context,libraryName)
                         onDismiss()
                     }
                 }

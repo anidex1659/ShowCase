@@ -87,7 +87,7 @@ fun ThemesSettings() {
 		"TokyoNight",
 	)
 	var expanded by remember { mutableStateOf(false) }
-	var selectedText by remember { mutableStateOf("Catppuccin") }
+	var selectedText by remember { mutableStateOf("Default") }
 	Column() {
 		Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
 			Text(

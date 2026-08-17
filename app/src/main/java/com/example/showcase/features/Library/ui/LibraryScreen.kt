@@ -191,9 +191,7 @@ fun LibraryScreen(navController: NavHostController) {
     val musicScanner =
 
         MusicScanner(
-
             detector = musicDetector,
-
             dao = dao
         )
 
@@ -201,13 +199,9 @@ fun LibraryScreen(navController: NavHostController) {
     val scannerManager =
 
         ScannerManager(
-
             dao = dao,
-
             libraryScanner = libraryScanner,
-
             movieScanner = movieScanner,
-
             musicScanner = musicScanner
         )
 
@@ -276,7 +270,6 @@ fun LibraryScreen(navController: NavHostController) {
     var showTmdbDilog by remember { mutableStateOf(false)  }
     if (!SettingsManager.tmdbApiAvailable && !showTmdbDilog) TmdbApiKeyDialog (
         apiKey = apiKey,
-
         apiAvailable = SettingsManager.tmdbApiAvailable,
 
         apiValidated = SettingsManager.apiValidated,
@@ -285,7 +278,7 @@ fun LibraryScreen(navController: NavHostController) {
 
         onOpenTmdb = { uriHandler.openUri("https://www.themoviedb.org/") },
 
-        onDismiss = {showDialog=true},
+        onDismiss = {showTmdbDilog=true},
 
         onSave = {
             SettingsManager.set_tmdbApi(
@@ -297,7 +290,7 @@ fun LibraryScreen(navController: NavHostController) {
             SettingsManager.set_tmdbApiValidaty(
                 false
             )
-            showDialog=true
+            showTmdbDilog=true
             Toast.makeText(context,"Custom Tm-db API Saved", Toast.LENGTH_SHORT).show()
         }
     )
@@ -406,17 +399,6 @@ fun MenuBar(
 
         Row {
             IconButton(
-                onClick = {navController.navigate(SettingsRoute)}
-            ) {
-
-                Icon(
-                    imageVector = Icons.Default.Settings,
-                    contentDescription = null,
-                    tint = tintcolor,
-                    modifier = Modifier.rotate(rotation)
-                )
-            }
-            IconButton(
                 onClick = onScanClick
             ) {
 
@@ -434,6 +416,16 @@ fun MenuBar(
 
                 Icon(
                     imageVector = Icons.Default.Add, contentDescription = null, tint = VMocha.Text
+                )
+            }
+            IconButton(
+                onClick = {navController.navigate(SettingsRoute)}
+            ) {
+
+                Icon(
+                    imageVector = Icons.Default.Settings,
+                    contentDescription = null,
+                    tint = tintcolor,
                 )
             }
         }

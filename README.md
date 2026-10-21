@@ -23,7 +23,14 @@ ShowCase transforms your collection of movies and TV shows into a modern streami
 
 ## 📸 Screenshots
 
-> *Coming Soon*
+<div align="center" style="display: flex; flex-wrap: nowrap; gap: 10px; overflow-x: auto;">
+  <img src="app/src/main/java/com/example/showcase/Screenshots/Home.jpeg" width="150" alt="Home"/>
+  <img src="app/src/main/java/com/example/showcase/Screenshots/Full.jpeg" width="150" alt="Movies"/>
+  <img src="app/src/main/java/com/example/showcase/Screenshots/info.jpeg" width="150" alt="Details"/>
+  <img src="app/src/main/java/com/example/showcase/Screenshots/player.jpeg" width="150" alt="Player"/>
+ <img src="app/src/main/java/com/example/showcase/Screenshots/Lib.jpeg" width="150" alt="Lib"/>
+  <img src="app/src/main/java/com/example/showcase/Screenshots/Settings.jpeg" width="150" alt="Settings"/>
+</div>
 
 ---
 
